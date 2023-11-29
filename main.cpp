@@ -229,8 +229,8 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                             cin >> fragmentSize;
                         }
                     }
-                    char text[message.size()];
-                    for(int i = 0; i < message.size(); i++){
+                    char text[message.size()-1];
+                    for(int i = 0; i < message.size()-1; i++){
                         text[i] = message[i];
                     }
                     if(message.size() > fragmentSize){
@@ -247,7 +247,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                         *rec = false;
                         start = time(nullptr);
                     }
-                    cout << message << endl << message.size();
+                    //cout << message << endl << message.size();
                 }
                 else {
 
@@ -272,7 +272,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
 //            time(0);
             this_thread::sleep_for(10ms);
             time_t d = (time(nullptr)-start);
-            if((d) > 10 && *connection){
+            if((d) > 120 && *connection){
                 *keepalive = false;
 
 
