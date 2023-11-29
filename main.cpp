@@ -121,7 +121,7 @@ int main() {
             WSACleanup();
             return 1;
         }
-        bool rec = true;
+        bool rec = false;
         thread t1(sendM, &rec);
         thread t2(receiveM,&rec);
 
@@ -173,19 +173,28 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
 
 void sendM(bool * rec){
     if(role == "klient"){
-        char text[] = "Chcem nadviazat spojenie";
-        Header header {0b00000001,25,1,1,0};
-        char message[sizeof(text) + sizeof(header)];
+        while(!*rec){}
+        if(*rec) {
+            char text[] = "Chcem nadviazat spojenie";
+            Header header{0b00000001, 25, 1, 1, 0};
+            char message[sizeof(text) + sizeof(header)];
 
-        codeMessage(&header, text, sizeof(text), message);
-        sendto(clientS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress));
+            codeMessage(&header, text, sizeof(text), message);
+            sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                   sizeof(serverAddress));
+            *rec = false;
+        }
     }
     else {
-        char text[] = "Nadviazane spojenie";
-        Header header {0b00000001,25,1,1,0};
-        char message[sizeof(text) + sizeof(header)];
-        codeMessage(&header,text,sizeof(text),message);
-        sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+        while(!*rec){}
+        if(*rec){
+            char text[] = "Nadviazane spojenie";
+            Header header {0b00000001,25,1,1,0};
+            char message[sizeof(text) + sizeof(header)];
+            codeMessage(&header,text,sizeof(text),message);
+            sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+            *rec = false;;
+        }
     }
 }
 
@@ -200,6 +209,7 @@ void receiveM(bool * rec){
             Header header1;
             decodeMessage(&header1,data, sizeof(data),buffer);
             std::cout << "Received from server: " << data << std::endl;
+            *rec = true;
         }
     }
     else {
@@ -212,7 +222,7 @@ void receiveM(bool * rec){
             Header header1;
             decodeMessage(&header1,data, sizeof(data),message);
             std::cout << "Received from klient: " << data << std::endl;
-
+            *rec = true;
         }
     }
 }
