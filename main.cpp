@@ -179,7 +179,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
         int i = 0;
         while(*keepalive){
 
-            if((time(0)-start) >= 5 && *connection && i < 3){
+            if((time(nullptr)-start) >= 5 && *connection && i < 3){
                 i++;
                 char text[] = "Posielam keep alive";
                 Header header{0b001000000, sizeof(text) + 9, 1, 1, 0};
@@ -189,7 +189,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                 sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
                        sizeof(serverAddress));
                 *rec = false;
-                start = time(0);
+                start = time(nullptr);
             }
             if(*rec && !*connection) {
                 cout <<"d";
@@ -201,7 +201,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                 sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
                        sizeof(serverAddress));
                 *rec = false;
-                start = time(0);
+                start = time(nullptr);
             }
 //            if(*rec && *connection){
 //                start = time(0);
@@ -217,8 +217,30 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                 codeMessage(&header,text,sizeof(text),message);
                 sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
                 *rec = false;
+                start = time(nullptr);
+            }
+            //cout << "huhuhuhuhuhuh" << endl;
+//            cout << start <<endl << time(0) <<endl << (time(0)-start)<<endl;
+//            time(0);
+            this_thread::sleep_for(10ms);
+            time_t d = (time(nullptr)-start);
+            if((d) > 10 && *connection){
+                *keepalive = false;
+                closesocket(serverS);
+                closesocket(clientS);
+                WSACleanup();
+                return;
+
             }
         }
+
+        char text[] = "Ukoncenie spojenia";
+        Header header {0b01000000,sizeof(text) + 9,1,1,0};
+        char message[sizeof(text) + sizeof(header)];
+        codeMessage(&header,text,sizeof(text),message);
+        sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+        *rec = false;
+
     }
 }
 
@@ -238,6 +260,9 @@ void receiveM(bool * rec, bool * connection, bool *keepalive){
                 if(toBinary((int)header1.type) == "00000010" && !*connection){
                     *connection = true;
                 }
+                else if(toBinary((int)header1.type) == "01000000" && *connection){
+                    cout << "koniec";
+                }
                 std::cout << "Received from server: " << data << std::endl;
                 *rec = true;
             }
@@ -245,14 +270,9 @@ void receiveM(bool * rec, bool * connection, bool *keepalive){
 
     }
     else {
-        start = time(0);
+        //start = time(0);
         while(*keepalive){
-            if(time(0)-start > 10){
-                *keepalive = false;
-            }
-            else {
-                cout << time(0)-start << "f";
-            }
+
             char message[1500];
             int size = sizeof(clientAdd);
 
@@ -264,14 +284,11 @@ void receiveM(bool * rec, bool * connection, bool *keepalive){
                 std::cout << "Received from klient: " << data << std::endl;
                 if(toBinary((int)header1.type) == "00000001"){
                     *connection = true;
-                    cout << "fdsf";
-                    start = time(0);
+                    start = time(nullptr);
+
                 }
                 *rec = true;
-                start = time(0);
-            }
-            else {
-                cout << "mozmo";
+                start = time(nullptr);
             }
         }
 
