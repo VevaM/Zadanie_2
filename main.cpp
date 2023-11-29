@@ -30,8 +30,9 @@ struct Header {
 
 void codeMessage(Header * header, char text[], int text_size, char message[]);
 void decodeMessage(Header *header1, char text[], int text_size, char message[]);
-void receiveM(bool * rec);
-void sendM(bool * rec);
+void receiveM(bool * rec, bool * connection);
+void sendM(bool * rec, bool *connection);
+string toBinary(int number);
 
 int main() {
 
@@ -92,9 +93,9 @@ int main() {
             return 1;
         }
 
-        bool rec = true;
-        thread t1(sendM, &rec);
-        thread t2(receiveM,&rec);
+        bool rec = true, connection = false;
+        thread t1(sendM, &rec ,&connection);
+        thread t2(receiveM,&rec, &connection);
 
         t1.join();
         t2.join();
@@ -121,9 +122,9 @@ int main() {
             WSACleanup();
             return 1;
         }
-        bool rec = false;
-        thread t1(sendM, &rec);
-        thread t2(receiveM,&rec);
+        bool rec = false, connection = false;
+        thread t1(sendM, &rec ,&connection);
+        thread t2(receiveM,&rec, &connection);
 
         t1.join();
         t2.join();
@@ -171,12 +172,13 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
     }
 }
 
-void sendM(bool * rec){
+void sendM(bool * rec, bool * connection){
     if(role == "klient"){
+
         while(!*rec){}
-        if(*rec) {
+        if(*rec && !*connection) {
             char text[] = "Chcem nadviazat spojenie";
-            Header header{0b00000001, 25, 1, 1, 0};
+            Header header{0b000000001, 25, 1, 1, 0};
             char message[sizeof(text) + sizeof(header)];
 
             codeMessage(&header, text, sizeof(text), message);
@@ -184,10 +186,13 @@ void sendM(bool * rec){
                    sizeof(serverAddress));
             *rec = false;
         }
+        if(*rec && *connection){
+            cout << "s";
+        }
     }
     else {
         while(!*rec){}
-        if(*rec){
+        if(*rec && *connection){
             char text[] = "Nadviazane spojenie";
             Header header {0b00000001,25,1,1,0};
             char message[sizeof(text) + sizeof(header)];
@@ -198,7 +203,7 @@ void sendM(bool * rec){
     }
 }
 
-void receiveM(bool * rec){
+void receiveM(bool * rec, bool * connection){
     if(role == "klient"){
         char buffer[1500];
         int size = sizeof(serverAdd);
@@ -222,7 +227,25 @@ void receiveM(bool * rec){
             Header header1;
             decodeMessage(&header1,data, sizeof(data),message);
             std::cout << "Received from klient: " << data << std::endl;
+            if(toBinary((int)header1.type) == "00000001") *connection = true;
             *rec = true;
         }
     }
+}
+
+string toBinary(int number){
+    string binary;
+    while(number != 0){
+        if(number%2 == 0){
+            binary +="0";
+        }
+        else binary +="1";
+        number /= 2;
+    }
+    if(binary.size() != 8){
+        while(binary.size() != 8){
+            binary = "0" + binary;
+        }
+    }
+    return binary;
 }
