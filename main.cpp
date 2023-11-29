@@ -32,8 +32,8 @@ struct Header {
 
 void codeMessage(Header * header, char text[], int text_size, char message[]);
 void decodeMessage(Header *header1, char text[], int text_size, char message[]);
-void receiveM(bool * rec, bool * connection, bool * keepalive);
-void sendM(bool * rec, bool *connection, bool *keepalive);
+void receiveM(bool * rec, bool * connection, bool * keepalive, bool *recievFr);
+void sendM(bool * rec, bool *connection, bool *keepalive, bool *recievFr);
 string toBinary(int number);
 
 int main() {
@@ -97,9 +97,9 @@ int main() {
             return 1;
         }
 
-        bool rec = true, connection = false , keepalive = true;
-        thread t1(sendM, &rec ,&connection, &keepalive);
-        thread t2(receiveM,&rec, &connection, &keepalive);
+        bool rec = true, connection = false , keepalive = true, recievFr = false;
+        thread t1(sendM, &rec ,&connection, &keepalive, &recievFr);
+        thread t2(receiveM,&rec, &connection, &keepalive, &recievFr);
 
         t1.join();
         t2.join();
@@ -126,9 +126,9 @@ int main() {
             WSACleanup();
             return 1;
         }
-        bool rec = false, connection = false, keepalive = true;
-        thread t1(sendM, &rec ,&connection,&keepalive);
-        thread t2(receiveM,&rec, &connection, &keepalive);
+        bool rec = false, connection = false, keepalive = true, recievFr = false;
+        thread t1(sendM, &rec ,&connection,&keepalive, &recievFr);
+        thread t2(receiveM,&rec, &connection, &keepalive, &recievFr);
 
         t1.join();
         t2.join();
@@ -176,7 +176,7 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
     }
 }
 
-void sendM(bool * rec, bool * connection, bool *keepalive){
+void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
     if(role == "klient"){
         int i = 0;
         while(*keepalive){
@@ -221,7 +221,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                     int fragmentSize;
                     cout << "Teraz napis prosim ta spravu (moznost cez viacej riadkov, pre ukoncenie napis znak #) " << endl;
                     getline(cin,message,'#');
-                    message.append("\0");
+//                    message.append("\0");
                     cout << "Zadaj velkost fragmentu (max 1463B)" << endl;
                     cin >> fragmentSize;
                     if(fragmentSize > 1463){
@@ -230,11 +230,51 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                             cin >> fragmentSize;
                         }
                     }
-                    char text[message.size()];
+                    char text[message.size() + 1];
                     for(int i = 0; i < message.size(); i++){
                         text[i] = message[i];
                     }
+                    text[message.size()] = '\0';
                     if(message.size() > fragmentSize){
+                        int number;
+                        if(message.size()%fragmentSize == 0){
+                            number = message.size()/fragmentSize;
+                        }
+                        else number = ((int)(message.size()/fragmentSize)) + 1;
+                        int a = 0;
+                        char toSend[fragmentSize];
+                        for(int i = 0; i < fragmentSize ; i++){
+                            toSend[i] = text[i];
+                        }
+
+                        Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, 0};
+                        char message[sizeof(toSend) + sizeof(header)];
+                        codeMessage(&header, text, sizeof(toSend), message);
+                        sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                               sizeof(serverAddress));
+                        *rec = false;
+                        *recievFr = false;
+                        start = time(nullptr);
+                        a++;
+
+                        while(a <= number){
+                            if(*recievFr){
+                                char toSend[fragmentSize];
+                                for(int i = (a*fragmentSize); i < fragmentSize ; i++){
+                                    toSend[i] = text[i];
+                                }
+                                a++;
+                                Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , 0};
+                                char message[sizeof(toSend) + sizeof(header)];
+                                codeMessage(&header, text, sizeof(toSend), message);
+                                sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                                       sizeof(serverAddress));
+                                *rec = false;
+                                *recievFr = false;
+                            }
+                        }
+
+
 
                     }
                     else {
@@ -268,6 +308,16 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                 *rec = false;
                 start = time(nullptr);
             }
+            else if(*rec && *recievFr){
+                char text[] = "Dostal som data";
+                Header header {0b00000010,sizeof(text) + 9,1,1,0};
+                char message[sizeof(text) + sizeof(header)];
+                codeMessage(&header,text,sizeof(text),message);
+                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+                *rec = false;
+                *recievFr = false;
+                start = time(nullptr);
+            }
             //cout << "huhuhuhuhuhuh" << endl;
 //            cout << start <<endl << time(0) <<endl << (time(0)-start)<<endl;
 //            time(0);
@@ -294,7 +344,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
     }
 }
 
-void receiveM(bool * rec, bool * connection, bool *keepalive){
+void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr){
     if(role == "klient"){
         while(*keepalive){
             char buffer[1500];
@@ -307,6 +357,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive){
                 decodeMessage(&header1,data, sizeof(data),buffer);
                 if(toBinary((int)header1.type) == "00000010" && !*connection){
                     *connection = true;
+                    if(!*recievFr) *recievFr = true;
                 }
                 else if(toBinary((int)header1.type) == "01000000" && *connection){
                     *keepalive = false;
@@ -337,6 +388,12 @@ void receiveM(bool * rec, bool * connection, bool *keepalive){
                 if(toBinary((int)header1.type) == "00000001"){
                     *connection = true;
                     start = time(nullptr);
+
+                }
+                else if(toBinary((int)header1.type) == "00000100"){
+                    //*connection = true;
+                    start = time(nullptr);
+                    *recievFr =  true;
 
                 }
                 *rec = true;
