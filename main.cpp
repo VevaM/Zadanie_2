@@ -16,7 +16,7 @@ static int dataLenght = 1400;
 static int listening_port = 12345;
 static bool endConnection = false, sendData = false, receiveData = false;
 
-static SOCKADDR_IN serverAddress;
+static sockaddr_in serverAddress, clientAddress;
 static SOCKET clientS, serverS;
 
 struct Header {
@@ -94,17 +94,14 @@ int main() {
         Header header {0b00000001,25,1,1,0};
         char message[sizeof(text) + sizeof(header)];
 
-        cout << "Robim message...";
         codeMessage(&header, text, sizeof(text), message);
-        cout << "Robim message...";
         sendto(clientS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress));
 
         // Receive the response from the server
         char buffer[1500];
-        sockaddr_in serverAdd;
-        int size = sizeof(serverAdd);
+        int size = sizeof(serverAddress);
 
-        int bytesReceived = recvfrom(clientS, buffer, sizeof(buffer), 0, reinterpret_cast<SOCKADDR *>(&serverAdd),&size);
+        int bytesReceived = recvfrom(clientS, buffer, sizeof(buffer), 0, reinterpret_cast<SOCKADDR *>(&serverAddress),&size);
         if (bytesReceived > 0) {
             char data[bytesReceived - 9];
             Header header1;
@@ -136,10 +133,9 @@ int main() {
         }
 
         char message[1500];
-        sockaddr_in clientAdd;
-        int size = sizeof(clientAdd);
+        int size = sizeof(clientAddress);
 
-        int recievedByt = recvfrom(serverS, message, sizeof(message), 0, reinterpret_cast<SOCKADDR *>(&clientAdd),&size);
+        int recievedByt = recvfrom(serverS, message, sizeof(message), 0, reinterpret_cast<SOCKADDR *>(&clientAddress),&size);
         if (recievedByt > 0) {
             char data[recievedByt - 9];
             Header header1;
@@ -150,7 +146,7 @@ int main() {
             Header header {0b00000001,25,1,1,0};
             char message1[sizeof(text) + sizeof(header)];
             codeMessage(&header,text,sizeof(text),message1);
-            sendto(serverS, message1, sizeof(message1), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+            sendto(serverS, message1, sizeof(message1), 0,reinterpret_cast<sockaddr*>(&clientAddress), sizeof(clientAddress));
 
         }
 
@@ -162,7 +158,7 @@ int main() {
 }
 
 void codeMessage(Header * header, char text[], int text_size, char message[]){
-    message[0] = (char) header->type;cout << "tu";
+    message[0] = (char) header->type;
     message[1] = (char) (0xff & (header->lenght >> 8));
     message[2] = (char) (0xff & header->lenght);
     message[3] = (char) (0xff & (header->numberOfFragments >> 8));
@@ -171,13 +167,11 @@ void codeMessage(Header * header, char text[], int text_size, char message[]){
     message[6] = (char) (0xff & header->fragmentInSequence);
     message[7] = (char) (0xff & (header->crc >> 8));
     message[8] = (char) (0xff & header->crc);
-    cout << "tu";
     int position = 9;
     for (int i = 0; i < text_size ; i++) {
         message[position] = text[i];
         position++;
     }
-    cout << "tu";
 }
 
 void decodeMessage(Header *header1, char text[], int text_size, char message[]){
@@ -202,8 +196,14 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
     }
 }
 
-void send(){
+void send(char message[]){
+    if(role == "klient"){
+        sendto(clientS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress));
+    }
+    else {
+        sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAddress), sizeof(clientAddress));
 
+    }
 }
 
 void receive(){
