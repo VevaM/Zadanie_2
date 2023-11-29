@@ -27,8 +27,8 @@ struct Header {
     unsigned short crc;
 };
 
-void codeMessage(Header *header, char *text[], int text_size, char *message[]);
-void decodeMessage(Header *header1, char *text[], int text_size, char *message[]);
+void codeMessage(Header * header, char text[], int text_size, char message[]);
+void decodeMessage(Header *header1, char text[], int text_size, char message[]);
 
 int main() {
 
@@ -94,7 +94,9 @@ int main() {
         Header header {0b00000001,25,1,1,0};
         char message[sizeof(text) + sizeof(header)];
 
-        codeMessage(&header, (char **)(&text), sizeof(text), (char **)(&message));
+        cout << "Robim message...";
+        codeMessage(&header, text, sizeof(text), message);
+        cout << "Robim message...";
         sendto(clientS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress));
 
         // Receive the response from the server
@@ -106,7 +108,7 @@ int main() {
         if (bytesReceived > 0) {
             char data[bytesReceived - 9];
             Header header1;
-            decodeMessage(&header1,(char **)&data, sizeof(data),(char **)&buffer);
+            decodeMessage(&header1,data, sizeof(data),buffer);
             std::cout << "Received from server: " << data << std::endl;
         }
 
@@ -141,13 +143,13 @@ int main() {
         if (recievedByt > 0) {
             char data[recievedByt - 9];
             Header header1;
-            decodeMessage(&header1,(char **)&data, sizeof(data),(char **)&message);
+            decodeMessage(&header1,data, sizeof(data),message);
             std::cout << "Received from klient: " << data << std::endl;
 
             char text[] = "Nadviazane spojenie";
             Header header {0b00000001,25,1,1,0};
             char message1[sizeof(text) + sizeof(header)];
-            codeMessage(&header,(char **)&text,sizeof(text),(char **)&message1);
+            codeMessage(&header,text,sizeof(text),message1);
             sendto(serverS, message1, sizeof(message1), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
 
         }
@@ -159,41 +161,43 @@ int main() {
     return 0;
 }
 
-void codeMessage(Header *header, char *text[], int text_size, char *message[]){
-    *message[0] = (char) header->type;
-    *message[1] = (char) (0xff & (header->lenght >> 8));
-    *message[2] = (char) (0xff & header->lenght);
-    *message[3] = (char) (0xff & (header->numberOfFragments >> 8));
-    *message[4] = (char) (0xff & header->numberOfFragments);
-    *message[5] = (char) (0xff & (header->fragmentInSequence >> 8));
-    *message[6] = (char) (0xff & header->fragmentInSequence);
-    *message[7] = (char) (0xff & (header->crc >> 8));
-    *message[8] = (char) (0xff & header->crc);
+void codeMessage(Header * header, char text[], int text_size, char message[]){
+    message[0] = (char) header->type;cout << "tu";
+    message[1] = (char) (0xff & (header->lenght >> 8));
+    message[2] = (char) (0xff & header->lenght);
+    message[3] = (char) (0xff & (header->numberOfFragments >> 8));
+    message[4] = (char) (0xff & header->numberOfFragments);
+    message[5] = (char) (0xff & (header->fragmentInSequence >> 8));
+    message[6] = (char) (0xff & header->fragmentInSequence);
+    message[7] = (char) (0xff & (header->crc >> 8));
+    message[8] = (char) (0xff & header->crc);
+    cout << "tu";
     int position = 9;
     for (int i = 0; i < text_size ; i++) {
-        *message[position] = *text[i];
+        message[position] = text[i];
         position++;
     }
+    cout << "tu";
 }
 
-void decodeMessage(Header *header1, char *text[], int text_size, char *message[]){
-    header1->type = *message[0];
-    header1->lenght = (unsigned char)*message[1];
+void decodeMessage(Header *header1, char text[], int text_size, char message[]){
+    header1->type = message[0];
+    header1->lenght = (unsigned char)message[1];
     header1->lenght <<= 8;
-    header1->lenght += (unsigned char)*message[2];
-    header1->numberOfFragments = (unsigned char)*message[3];
+    header1->lenght += (unsigned char)message[2];
+    header1->numberOfFragments = (unsigned char)message[3];
     header1->numberOfFragments <<= 8;
-    header1->numberOfFragments += (unsigned char)*message[4];
-    header1->fragmentInSequence = (unsigned char)*message[5];
+    header1->numberOfFragments += (unsigned char)message[4];
+    header1->fragmentInSequence = (unsigned char)message[5];
     header1->fragmentInSequence <<= 8;
-    header1->fragmentInSequence += (unsigned char)*message[6];
-    header1->crc = (unsigned char)*message[7];
+    header1->fragmentInSequence += (unsigned char)message[6];
+    header1->crc = (unsigned char)message[7];
     header1->crc <<= 8;
-    header1->crc += (unsigned char)*message[8];
+    header1->crc += (unsigned char)message[8];
 
     int d = 9;
     for(int i = 0 ; i < text_size ; i++){
-        *text[i] = *message[d];
+        text[i] = message[d];
         d++;
     }
 }
