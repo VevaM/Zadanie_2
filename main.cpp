@@ -16,7 +16,7 @@ static int dataLenght = 1400;
 static int listening_port = 12345;
 static bool endConnection = false, sendData = false, receiveData = false;
 
-static sockaddr_in serverAddress, clientAddress;
+static SOCKADDR_IN serverAddress;
 static SOCKET clientS, serverS;
 
 struct Header {
@@ -99,9 +99,10 @@ int main() {
 
         // Receive the response from the server
         char buffer[1500];
-        int size = sizeof(serverAddress);
+        sockaddr_in serverAdd;
+        int size = sizeof(serverAdd);
 
-        int bytesReceived = recvfrom(clientS, buffer, sizeof(buffer), 0, reinterpret_cast<SOCKADDR *>(&serverAddress),&size);
+        int bytesReceived = recvfrom(clientS, buffer, sizeof(buffer), 0, reinterpret_cast<SOCKADDR *>(&serverAdd),&size);
         if (bytesReceived > 0) {
             char data[bytesReceived - 9];
             Header header1;
@@ -133,9 +134,10 @@ int main() {
         }
 
         char message[1500];
-        int size = sizeof(clientAddress);
+        sockaddr_in clientAdd;
+        int size = sizeof(clientAdd);
 
-        int recievedByt = recvfrom(serverS, message, sizeof(message), 0, reinterpret_cast<SOCKADDR *>(&clientAddress),&size);
+        int recievedByt = recvfrom(serverS, message, sizeof(message), 0, reinterpret_cast<SOCKADDR *>(&clientAdd),&size);
         if (recievedByt > 0) {
             char data[recievedByt - 9];
             Header header1;
@@ -146,7 +148,7 @@ int main() {
             Header header {0b00000001,25,1,1,0};
             char message1[sizeof(text) + sizeof(header)];
             codeMessage(&header,text,sizeof(text),message1);
-            sendto(serverS, message1, sizeof(message1), 0,reinterpret_cast<sockaddr*>(&clientAddress), sizeof(clientAddress));
+            sendto(serverS, message1, sizeof(message1), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
 
         }
 
@@ -201,7 +203,7 @@ void send(char message[]){
         sendto(clientS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress));
     }
     else {
-        sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAddress), sizeof(clientAddress));
+        sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress));
 
     }
 }
