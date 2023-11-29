@@ -13,7 +13,7 @@
 using namespace std;
 static string role;
 static int dataLenght = 1400;
-static int listening_port = 12345;
+static int listening_port = 20000;
 static bool endConnection = false, sendData = false, receiveData = false;
 
 static SOCKADDR_IN serverAddress;
@@ -176,9 +176,11 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
 
 void sendM(bool * rec, bool * connection, bool *keepalive){
     if(role == "klient"){
-
+        int i = 0;
         while(*keepalive){
-            if((time(0)-start) >= 5){
+
+            if((time(0)-start) >= 5 && *connection && i < 3){
+                i++;
                 char text[] = "Posielam keep alive";
                 Header header{0b001000000, sizeof(text) + 9, 1, 1, 0};
                 char message[sizeof(text) + sizeof(header)];
@@ -190,6 +192,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                 start = time(0);
             }
             if(*rec && !*connection) {
+                cout <<"d";
                 char text[] = "Chcem nadviazat spojenie";
                 Header header{0b000000001, 25, 1, 1, 0};
                 char message[sizeof(text) + sizeof(header)];
@@ -200,10 +203,9 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                 *rec = false;
                 start = time(0);
             }
-            if(*rec && *connection){
-                cout << "s";
-                start = time(0);
-            }
+//            if(*rec && *connection){
+//                start = time(0);
+//            }
         }
     }
     else {
@@ -214,7 +216,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                 char message[sizeof(text) + sizeof(header)];
                 codeMessage(&header,text,sizeof(text),message);
                 sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
-                *rec = false;;
+                *rec = false;
             }
         }
     }
@@ -231,6 +233,11 @@ void receiveM(bool * rec, bool * connection, bool *keepalive){
                 char data[bytesReceived - 9];
                 Header header1;
                 decodeMessage(&header1,data, sizeof(data),buffer);
+                cout << (int)header1.type;
+                cout << toBinary((int)header1.type);
+                if(toBinary((int)header1.type) == "00000010" && !*connection){
+                    *connection = true;
+                }
                 std::cout << "Received from server: " << data << std::endl;
                 *rec = true;
             }
@@ -244,7 +251,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive){
                 *keepalive = false;
             }
             else {
-                cout << time(0)-start;
+                cout << time(0)-start << "f";
             }
             char message[1500];
             int size = sizeof(clientAdd);
@@ -257,10 +264,14 @@ void receiveM(bool * rec, bool * connection, bool *keepalive){
                 std::cout << "Received from klient: " << data << std::endl;
                 if(toBinary((int)header1.type) == "00000001"){
                     *connection = true;
+                    cout << "fdsf";
                     start = time(0);
                 }
                 *rec = true;
                 start = time(0);
+            }
+            else {
+                cout << "mozmo";
             }
         }
 
@@ -271,9 +282,9 @@ string toBinary(int number){
     string binary;
     while(number != 0){
         if(number%2 == 0){
-            binary +="0";
+            binary ="0" + binary;
         }
-        else binary +="1";
+        else binary ="1" + binary;
         number /= 2;
     }
     if(binary.size() != 8){
