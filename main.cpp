@@ -241,6 +241,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                             number = message.size()/fragmentSize;
                         }
                         else number = ((int)(message.size()/fragmentSize)) + 1;
+
                         int a = 0;
                         char toSend[fragmentSize];
                         for(int i = 0; i < fragmentSize ; i++){
@@ -258,9 +259,10 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                         a++;
 
                         while(a <= number){
+                            cout << "cakam";
                             if(*recievFr){
                                 char toSend[fragmentSize];
-                                for(int i = (a*fragmentSize); i < fragmentSize ; i++){
+                                for(int i = (a*fragmentSize); i < ((a+1)*fragmentSize) ; i++){
                                     toSend[i] = text[i];
                                 }
                                 a++;
@@ -271,6 +273,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                                        sizeof(serverAddress));
                                 *rec = false;
                                 *recievFr = false;
+                                start = time(nullptr);
                             }
                         }
 
@@ -299,7 +302,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
     }
     else {
         while(*keepalive){
-            if(*rec && *connection){
+            if(*rec && *connection && !*recievFr){
                 char text[] = "Nadviazane spojenie";
                 Header header {0b00000010,sizeof(text) + 9,1,1,0};
                 char message[sizeof(text) + sizeof(header)];
@@ -315,7 +318,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                 codeMessage(&header,text,sizeof(text),message);
                 sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
                 *rec = false;
-                *recievFr = false;
+                //*recievFr = false;
                 start = time(nullptr);
             }
             //cout << "huhuhuhuhuhuh" << endl;
@@ -357,11 +360,14 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr){
                 decodeMessage(&header1,data, sizeof(data),buffer);
                 if(toBinary((int)header1.type) == "00000010" && !*connection){
                     *connection = true;
-                    if(!*recievFr) *recievFr = true;
+
                 }
                 else if(toBinary((int)header1.type) == "01000000" && *connection){
                     *keepalive = false;
 
+                }
+                else if(toBinary((int)header1.type) == "00000010" && *connection){
+                    if(!*recievFr) *recievFr = true;
                 }
                 std::cout << "Received from server: " << data << std::endl;
                 *rec = true;
