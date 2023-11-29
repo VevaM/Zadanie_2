@@ -217,9 +217,12 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                 // ideme posielat spravu
                 if(choice == 1){
                     string message;
-
                     int fragmentSize;
-                    cout << "Teraz napis prosim ta spravu (moznost cez viacej riadkov, pre ukoncenie napis znak #) " << endl;
+                    this_thread::sleep_for(10ms);
+                    std::cin.clear();
+                    std::cin.sync();
+                    cout << "Teraz napis prosim ta spravu (moznost cez viacej riadkov, pre ukoncenie napis znak #) ";
+                    cin.clear();
                     getline(cin,message,'#');
 //                    message.append("\0");
                     cout << "Zadaj velkost fragmentu (max 1463B)" << endl;
@@ -234,6 +237,13 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                     for(int i = 0; i < message.size(); i++){
                         text[i] = message[i];
                     }
+                    cout << text << endl;
+                    cout <<text[0];
+                    cout <<text[0];
+                    cout <<text[0];
+                    cout <<text[0];cout <<text[0];
+
+
                     text[message.size()] = '\0';
                     if(message.size() > fragmentSize){
                         int number;
@@ -246,11 +256,12 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                         char toSend[fragmentSize];
                         for(int i = 0; i < fragmentSize ; i++){
                             toSend[i] = text[i];
+                            cout << i;
                         }
 
                         Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, 0};
                         char message[sizeof(toSend) + sizeof(header)];
-                        codeMessage(&header, text, sizeof(toSend), message);
+                        codeMessage(&header, toSend, sizeof(toSend), message);
                         sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
                                sizeof(serverAddress));
                         *rec = false;
@@ -258,17 +269,19 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                         start = time(nullptr);
                         a++;
 
-                        while(a <= number){
-                            cout << "cakam";
+                        while(a < number){
+
                             if(*recievFr){
                                 char toSend[fragmentSize];
+                                cout << a*fragmentSize << " " << (a+1)*fragmentSize;
                                 for(int i = (a*fragmentSize); i < ((a+1)*fragmentSize) ; i++){
-                                    toSend[i] = text[i];
+                                    toSend[i - a*fragmentSize] = text[i];
                                 }
+                                cout << toSend << " " << a;
                                 a++;
                                 Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , 0};
                                 char message[sizeof(toSend) + sizeof(header)];
-                                codeMessage(&header, text, sizeof(toSend), message);
+                                codeMessage(&header, toSend, sizeof(toSend), message);
                                 sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
                                        sizeof(serverAddress));
                                 *rec = false;
