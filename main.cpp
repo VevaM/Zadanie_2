@@ -59,6 +59,8 @@ int main() {
         }
     }
 
+
+
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         std::cerr << "Nepodarilo sa inicializovat winsock." << std::endl;
@@ -192,9 +194,8 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                 start = time(nullptr);
             }
             if(*rec && !*connection) {
-                cout <<"d";
                 char text[] = "Chcem nadviazat spojenie";
-                Header header{0b000000001, 25, 1, 1, 0};
+                Header header{0b000000001, sizeof(text) + 9, 1, 1, 0};
                 char message[sizeof(text) + sizeof(header)];
 
                 codeMessage(&header, text, sizeof(text), message);
@@ -203,9 +204,56 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                 *rec = false;
                 start = time(nullptr);
             }
-//            if(*rec && *connection){
-//                start = time(0);
-//            }
+            if(*rec && *connection){
+                int choice;
+                cout << "Chces poslat spravu(1) alebo subor(2)?";
+                cin >> choice;
+                if(choice != 1 && choice != 2){
+                    while(choice != 1 && choice != 2){
+                        cout << "Zadal si nespravny typ, pre spravu napis 1 , pre subor 2";
+                        cin >> choice;
+                    }
+                }
+                // ideme posielat spravu
+                if(choice == 1){
+                    string message;
+
+                    int fragmentSize;
+                    cout << "Teraz napis prosim ta spravu (moznost cez viacej riadkov, pre ukoncenie napis znak #) " << endl;
+                    getline(cin,message,'#');
+                    cout << "Zadaj velkost fragmentu (max 1463B)" << endl;
+                    cin >> fragmentSize;
+                    if(fragmentSize > 1463){
+                        while(fragmentSize > 1463){
+                            cout << "Zadal si prilis velku velkost fragmentu zvol (do 1463)";
+                            cin >> fragmentSize;
+                        }
+                    }
+                    char text[message.size()];
+                    for(int i = 0; i < message.size(); i++){
+                        text[i] = message[i];
+                    }
+                    if(message.size() > fragmentSize){
+
+                    }
+                    else {
+                        //char text[] = "Posielam textovu spravu";
+                        Header header{0b000000100, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, 0};
+                        char message[sizeof(text) + sizeof(header)];
+
+                        codeMessage(&header, text, sizeof(text), message);
+                        sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                               sizeof(serverAddress));
+                        *rec = false;
+                        start = time(nullptr);
+                    }
+                    cout << message << endl << message.size();
+                }
+                else {
+
+                }
+                start = time(nullptr);
+            }
         }
     }
     else {
@@ -256,22 +304,21 @@ void receiveM(bool * rec, bool * connection, bool *keepalive){
                 char data[bytesReceived - 9];
                 Header header1;
                 decodeMessage(&header1,data, sizeof(data),buffer);
-                cout << (int)header1.type;
-                cout << toBinary((int)header1.type);
                 if(toBinary((int)header1.type) == "00000010" && !*connection){
                     *connection = true;
                 }
                 else if(toBinary((int)header1.type) == "01000000" && *connection){
-                    closesocket(serverS);
-                    closesocket(clientS);
-                    WSACleanup();
-                    return;
+                    *keepalive = false;
+
                 }
                 std::cout << "Received from server: " << data << std::endl;
                 *rec = true;
             }
         }
-
+        closesocket(serverS);
+        closesocket(clientS);
+        WSACleanup();
+        return;
     }
     else {
         //start = time(0);
@@ -314,4 +361,5 @@ string toBinary(int number){
         }
     }
     return binary;
+
 }
