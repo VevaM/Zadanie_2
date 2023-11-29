@@ -27,6 +27,9 @@ struct Header {
     unsigned short crc;
 };
 
+void codeMessage(Header *header, char *text[], int text_size, char *message[]);
+void decodeMessage(Header *header1, char *text[], int text_size, char *message[]);
+
 int main() {
 
 
@@ -89,53 +92,21 @@ int main() {
         // Send a message to the server
         char text[] = "Chcem nadviazat spojenie";
         Header header {0b00000001,25,1,1,0};
-
         char message[sizeof(text) + sizeof(header)];
-        message[0] = (char) header.type;
-        message[1] = (char) (0xff & (header.lenght >> 8));
-        message[2] = (char) (0xff & header.lenght);
-        message[3] = (char) (0xff & (header.numberOfFragments >> 8));
-        message[4] = (char) (0xff & header.numberOfFragments);
-        message[5] = (char) (0xff & (header.fragmentInSequence >> 8));
-        message[6] = (char) (0xff & header.fragmentInSequence);
-        message[7] = (char) (0xff & (header.crc >> 8));
-        message[8] = (char) (0xff & header.crc);
-        int position = 9;
-        for (char i : text) {
-            message[position] = i;
-            position++;
-        }
 
-        cout << sizeof(message);
-
+        codeMessage(&header, (char **)(&text), sizeof(text), (char **)(&message));
         sendto(clientS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress));
 
         // Receive the response from the server
         char buffer[1500];
+        sockaddr_in serverAdd;
+        int size = sizeof(serverAdd);
 
-        int bytesReceived = recvfrom(clientS, buffer, sizeof(buffer), 0, nullptr, nullptr);
+        int bytesReceived = recvfrom(clientS, buffer, sizeof(buffer), 0, reinterpret_cast<SOCKADDR *>(&serverAdd),&size);
         if (bytesReceived > 0) {
             char data[bytesReceived - 9];
             Header header1;
-            header1.type = buffer[0];
-            header1.lenght = (unsigned char)buffer[1];
-            header1.lenght <<= 8;
-            header1.lenght += (unsigned char)buffer[2];
-            header1.numberOfFragments = (unsigned char)buffer[3];
-            header1.numberOfFragments <<= 8;
-            header1.numberOfFragments += (unsigned char)buffer[4];
-            header1.fragmentInSequence = (unsigned char)buffer[5];
-            header1.fragmentInSequence <<= 8;
-            header1.fragmentInSequence += (unsigned char)buffer[6];
-            header1.crc = (unsigned char)buffer[7];
-            header1.crc <<= 8;
-            header1.crc += (unsigned char)buffer[8];
-
-            int d = 9;
-            for(int i = 0 ; i < sizeof(data) ; i++){
-                data[i] = buffer[d];
-                d++;
-            }
+            decodeMessage(&header1,(char **)&data, sizeof(data),(char **)&buffer);
             std::cout << "Received from server: " << data << std::endl;
         }
 
@@ -170,48 +141,13 @@ int main() {
         if (recievedByt > 0) {
             char data[recievedByt - 9];
             Header header1;
-            header1.type = message[0];
-            header1.lenght = (unsigned char)message[1];
-            header1.lenght <<= 8;
-            header1.lenght += (unsigned char)message[2];
-            header1.numberOfFragments = (unsigned char)message[3];
-            header1.numberOfFragments <<= 8;
-            header1.numberOfFragments += (unsigned char)message[4];
-            header1.fragmentInSequence = (unsigned char)message[5];
-            header1.fragmentInSequence <<= 8;
-            header1.fragmentInSequence += (unsigned char)message[6];
-            header1.crc = (unsigned char)message[7];
-            header1.crc <<= 8;
-            header1.crc += (unsigned char)message[8];
-
-            int d = 9;
-            for(int i = 0 ; i < sizeof(data) ; i++){
-                data[i] = message[d];
-                d++;
-            }
+            decodeMessage(&header1,(char **)&data, sizeof(data),(char **)&message);
             std::cout << "Received from klient: " << data << std::endl;
 
             char text[] = "Nadviazane spojenie";
             Header header {0b00000001,25,1,1,0};
-
             char message1[sizeof(text) + sizeof(header)];
-            message1[0] = (char) header.type;
-            message1[1] = (char) (0xff & (header.lenght >> 8));
-            message1[2] = (char) (0xff & header.lenght);
-            message1[3] = (char) (0xff & (header.numberOfFragments >> 8));
-            message1[4] = (char) (0xff & header.numberOfFragments);
-            message1[5] = (char) (0xff & (header.fragmentInSequence >> 8));
-            message1[6] = (char) (0xff & header.fragmentInSequence);
-            message1[7] = (char) (0xff & (header.crc >> 8));
-            message1[8] = (char) (0xff & header.crc);
-            int position = 9;
-            for (char i : text) {
-                message1[position] = i;
-                position++;
-            }
-
-            cout << sizeof(message1);
-
+            codeMessage(&header,(char **)&text,sizeof(text),(char **)&message1);
             sendto(serverS, message1, sizeof(message1), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
 
         }
@@ -221,6 +157,45 @@ int main() {
     }
 
     return 0;
+}
+
+void codeMessage(Header *header, char *text[], int text_size, char *message[]){
+    *message[0] = (char) header->type;
+    *message[1] = (char) (0xff & (header->lenght >> 8));
+    *message[2] = (char) (0xff & header->lenght);
+    *message[3] = (char) (0xff & (header->numberOfFragments >> 8));
+    *message[4] = (char) (0xff & header->numberOfFragments);
+    *message[5] = (char) (0xff & (header->fragmentInSequence >> 8));
+    *message[6] = (char) (0xff & header->fragmentInSequence);
+    *message[7] = (char) (0xff & (header->crc >> 8));
+    *message[8] = (char) (0xff & header->crc);
+    int position = 9;
+    for (int i = 0; i < text_size ; i++) {
+        *message[position] = *text[i];
+        position++;
+    }
+}
+
+void decodeMessage(Header *header1, char *text[], int text_size, char *message[]){
+    header1->type = *message[0];
+    header1->lenght = (unsigned char)*message[1];
+    header1->lenght <<= 8;
+    header1->lenght += (unsigned char)*message[2];
+    header1->numberOfFragments = (unsigned char)*message[3];
+    header1->numberOfFragments <<= 8;
+    header1->numberOfFragments += (unsigned char)*message[4];
+    header1->fragmentInSequence = (unsigned char)*message[5];
+    header1->fragmentInSequence <<= 8;
+    header1->fragmentInSequence += (unsigned char)*message[6];
+    header1->crc = (unsigned char)*message[7];
+    header1->crc <<= 8;
+    header1->crc += (unsigned char)*message[8];
+
+    int d = 9;
+    for(int i = 0 ; i < text_size ; i++){
+        *text[i] = *message[d];
+        d++;
+    }
 }
 
 void send(){
