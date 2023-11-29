@@ -1,0 +1,3 @@
+C:/Users/veron/Desktop/skola/3.rocnik/ZS 2023-24/PKS/Zadanie_2/cmake-build-debug/CMakeFiles/Zadanie_2.dir
+C:/Users/veron/Desktop/skola/3.rocnik/ZS 2023-24/PKS/Zadanie_2/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/veron/Desktop/skola/3.rocnik/ZS 2023-24/PKS/Zadanie_2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
