@@ -221,6 +221,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                     int fragmentSize;
                     cout << "Teraz napis prosim ta spravu (moznost cez viacej riadkov, pre ukoncenie napis znak #) " << endl;
                     getline(cin,message,'#');
+                    message.append("\0");
                     cout << "Zadaj velkost fragmentu (max 1463B)" << endl;
                     cin >> fragmentSize;
                     if(fragmentSize > 1463){
@@ -229,8 +230,8 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
                             cin >> fragmentSize;
                         }
                     }
-                    char text[message.size()-1];
-                    for(int i = 0; i < message.size()-1; i++){
+                    char text[message.size()];
+                    for(int i = 0; i < message.size(); i++){
                         text[i] = message[i];
                     }
                     if(message.size() > fragmentSize){
