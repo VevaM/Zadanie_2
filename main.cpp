@@ -20,6 +20,8 @@ static SOCKADDR_IN serverAddress;
 static sockaddr_in clientAdd, serverAdd;
 static SOCKET clientS, serverS;
 
+static time_t start;
+
 struct Header {
     unsigned char type;
     unsigned short lenght;
@@ -30,8 +32,8 @@ struct Header {
 
 void codeMessage(Header * header, char text[], int text_size, char message[]);
 void decodeMessage(Header *header1, char text[], int text_size, char message[]);
-void receiveM(bool * rec, bool * connection);
-void sendM(bool * rec, bool *connection);
+void receiveM(bool * rec, bool * connection, bool * keepalive);
+void sendM(bool * rec, bool *connection, bool *keepalive);
 string toBinary(int number);
 
 int main() {
@@ -93,9 +95,9 @@ int main() {
             return 1;
         }
 
-        bool rec = true, connection = false;
-        thread t1(sendM, &rec ,&connection);
-        thread t2(receiveM,&rec, &connection);
+        bool rec = true, connection = false , keepalive = true;
+        thread t1(sendM, &rec ,&connection, &keepalive);
+        thread t2(receiveM,&rec, &connection, &keepalive);
 
         t1.join();
         t2.join();
@@ -122,9 +124,9 @@ int main() {
             WSACleanup();
             return 1;
         }
-        bool rec = false, connection = false;
-        thread t1(sendM, &rec ,&connection);
-        thread t2(receiveM,&rec, &connection);
+        bool rec = false, connection = false, keepalive = true;
+        thread t1(sendM, &rec ,&connection,&keepalive);
+        thread t2(receiveM,&rec, &connection, &keepalive);
 
         t1.join();
         t2.join();
@@ -172,64 +174,96 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
     }
 }
 
-void sendM(bool * rec, bool * connection){
+void sendM(bool * rec, bool * connection, bool *keepalive){
     if(role == "klient"){
 
-        while(!*rec){}
-        if(*rec && !*connection) {
-            char text[] = "Chcem nadviazat spojenie";
-            Header header{0b000000001, 25, 1, 1, 0};
-            char message[sizeof(text) + sizeof(header)];
+        while(*keepalive){
+            if((time(0)-start) >= 5){
+                char text[] = "Posielam keep alive";
+                Header header{0b001000000, sizeof(text) + 9, 1, 1, 0};
+                char message[sizeof(text) + sizeof(header)];
 
-            codeMessage(&header, text, sizeof(text), message);
-            sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
-                   sizeof(serverAddress));
-            *rec = false;
-        }
-        if(*rec && *connection){
-            cout << "s";
+                codeMessage(&header, text, sizeof(text), message);
+                sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                       sizeof(serverAddress));
+                *rec = false;
+                start = time(0);
+            }
+            if(*rec && !*connection) {
+                char text[] = "Chcem nadviazat spojenie";
+                Header header{0b000000001, 25, 1, 1, 0};
+                char message[sizeof(text) + sizeof(header)];
+
+                codeMessage(&header, text, sizeof(text), message);
+                sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                       sizeof(serverAddress));
+                *rec = false;
+                start = time(0);
+            }
+            if(*rec && *connection){
+                cout << "s";
+                start = time(0);
+            }
         }
     }
     else {
-        while(!*rec){}
-        if(*rec && *connection){
-            char text[] = "Nadviazane spojenie";
-            Header header {0b00000001,25,1,1,0};
-            char message[sizeof(text) + sizeof(header)];
-            codeMessage(&header,text,sizeof(text),message);
-            sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
-            *rec = false;;
+        while(*keepalive){
+            if(*rec && *connection){
+                char text[] = "Nadviazane spojenie";
+                Header header {0b00000010,sizeof(text) + 9,1,1,0};
+                char message[sizeof(text) + sizeof(header)];
+                codeMessage(&header,text,sizeof(text),message);
+                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+                *rec = false;;
+            }
         }
     }
 }
 
-void receiveM(bool * rec, bool * connection){
+void receiveM(bool * rec, bool * connection, bool *keepalive){
     if(role == "klient"){
-        char buffer[1500];
-        int size = sizeof(serverAdd);
+        while(*keepalive){
+            char buffer[1500];
+            int size = sizeof(serverAdd);
 
-        int bytesReceived = recvfrom(clientS, buffer, sizeof(buffer), 0, reinterpret_cast<SOCKADDR *>(&serverAdd),&size);
-        if (bytesReceived > 0) {
-            char data[bytesReceived - 9];
-            Header header1;
-            decodeMessage(&header1,data, sizeof(data),buffer);
-            std::cout << "Received from server: " << data << std::endl;
-            *rec = true;
+            int bytesReceived = recvfrom(clientS, buffer, sizeof(buffer), 0, reinterpret_cast<SOCKADDR *>(&serverAdd),&size);
+            if (bytesReceived > 0) {
+                char data[bytesReceived - 9];
+                Header header1;
+                decodeMessage(&header1,data, sizeof(data),buffer);
+                std::cout << "Received from server: " << data << std::endl;
+                *rec = true;
+            }
         }
+
     }
     else {
-        char message[1500];
-        int size = sizeof(clientAdd);
+        start = time(0);
+        while(*keepalive){
+            if(time(0)-start > 10){
+                *keepalive = false;
+            }
+            else {
+                cout << time(0)-start;
+            }
+            char message[1500];
+            int size = sizeof(clientAdd);
 
-        int recievedByt = recvfrom(serverS, message, sizeof(message), 0, reinterpret_cast<SOCKADDR *>(&clientAdd),&size);
-        if (recievedByt > 0) {
-            char data[recievedByt - 9];
-            Header header1;
-            decodeMessage(&header1,data, sizeof(data),message);
-            std::cout << "Received from klient: " << data << std::endl;
-            if(toBinary((int)header1.type) == "00000001") *connection = true;
-            *rec = true;
+            int recievedByt = recvfrom(serverS, message, sizeof(message), 0, reinterpret_cast<SOCKADDR *>(&clientAdd),&size);
+            if (recievedByt > 0) {
+                char data[recievedByt - 9];
+                Header header1;
+                decodeMessage(&header1,data, sizeof(data),message);
+                std::cout << "Received from klient: " << data << std::endl;
+                if(toBinary((int)header1.type) == "00000001"){
+                    *connection = true;
+                    start = time(0);
+                }
+                *rec = true;
+                start = time(0);
+            }
         }
+
     }
 }
 
