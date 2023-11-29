@@ -189,9 +189,9 @@ int main() {
                 data[i] = message[d];
                 d++;
             }
-            std::cout << "Received from server: " << data << std::endl;
+            std::cout << "Received from klient: " << data << std::endl;
 
-            char text[] = "Chcem nadviazat spojenie";
+            char text[] = "Nadviazane spojenie";
             Header header {0b00000001,25,1,1,0};
 
             char message1[sizeof(text) + sizeof(header)];
