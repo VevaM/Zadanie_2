@@ -17,6 +17,7 @@ static int listening_port = 12345;
 static bool endConnection = false, sendData = false, receiveData = false;
 
 static SOCKADDR_IN serverAddress;
+static sockaddr_in clientAdd;
 static SOCKET clientS, serverS;
 
 struct Header {
@@ -134,7 +135,7 @@ int main() {
         }
 
         char message[1500];
-        sockaddr_in clientAdd;
+//        sockaddr_in clientAdd;
         int size = sizeof(clientAdd);
 
         int recievedByt = recvfrom(serverS, message, sizeof(message), 0, reinterpret_cast<SOCKADDR *>(&clientAdd),&size);
