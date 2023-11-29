@@ -226,10 +226,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
             time_t d = (time(nullptr)-start);
             if((d) > 10 && *connection){
                 *keepalive = false;
-                closesocket(serverS);
-                closesocket(clientS);
-                WSACleanup();
-                return;
+
 
             }
         }
@@ -240,6 +237,10 @@ void sendM(bool * rec, bool * connection, bool *keepalive){
         codeMessage(&header,text,sizeof(text),message);
         sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
         *rec = false;
+        closesocket(serverS);
+        closesocket(clientS);
+        WSACleanup();
+        return;
 
     }
 }
@@ -261,7 +262,10 @@ void receiveM(bool * rec, bool * connection, bool *keepalive){
                     *connection = true;
                 }
                 else if(toBinary((int)header1.type) == "01000000" && *connection){
-                    cout << "koniec";
+                    closesocket(serverS);
+                    closesocket(clientS);
+                    WSACleanup();
+                    return;
                 }
                 std::cout << "Received from server: " << data << std::endl;
                 *rec = true;
