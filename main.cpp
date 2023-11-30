@@ -99,22 +99,23 @@ int main() {
         }
 
         bool rec = true, connection = false , keepalive = true, recievFr = false, changeRole = false;
-        while (!endConnection) {
-            if(changedRoles) {
-                changedRoles = false;
-                if(role == "klient"){
-                    role = "server";
-                }
-                else role = "klient";
-
-//                if(!rec) rec = true;
-//                else rec = false;
-            }
-            thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole);
-            thread t2(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole);
-            t1.join();
-            t2.join();
-        }
+        thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole);
+        thread t2(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole);
+        t1.join();
+        t2.join();
+//        while (!endConnection) {
+//            if(changedRoles) {
+//                changedRoles = false;
+//                if(role == "klient"){
+//                    role = "server";
+//                }
+//                else role = "klient";
+//
+////                if(!rec) rec = true;
+////                else rec = false;
+//            }
+//
+//        }
 
 
     }
@@ -123,6 +124,7 @@ int main() {
         cin >> listening_port;
     // Vytvorenie socketu
         serverS = socket(AF_INET,SOCK_DGRAM, 0);
+        clientS = serverS;
         if (serverS == INVALID_SOCKET) {
             cout << "Nepodaril sa vytvorit socket." << endl;
             WSACleanup();
@@ -142,26 +144,28 @@ int main() {
             return 1;
         }
         bool rec = false, connection = false, keepalive = true, recievFr = false, changeRole = false;
-        while (!endConnection) {
-            cout << "hladam sa";
-            if(changedRoles) {
+        thread t1(sendM, &rec, &connection, &keepalive, &recievFr, &changeRole);
+        thread t2(receiveM, &rec, &connection, &keepalive, &recievFr, &changeRole);
 
-                changedRoles = false;
-                if(role == "klient"){
-                    role = "server";
-                }
-                else role = "klient";
-
-//                if(!rec) rec = true;
-//                else rec = false;
-            }
-            thread t1(sendM, &rec, &connection, &keepalive, &recievFr, &changeRole);
-            thread t2(receiveM, &rec, &connection, &keepalive, &recievFr, &changeRole);
-
-            t1.join();
-            t2.join();
-
-        }
+        t1.join();
+        t2.join();
+//        while (!endConnection) {
+//            cout << "hladam sa";
+//            if(changedRoles) {
+//
+//                changedRoles = false;
+////                if(role == "klient"){
+////                    role = "server";
+////                }
+////                else role = "klient";
+//
+////                if(!rec) rec = true;
+////                else rec = false;
+//            }
+//
+//
+//
+//        }
     }
 
     return 0;
@@ -351,6 +355,10 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 start = time(nullptr);
             }
         }
+        if (changedRoles) {
+            sendM(rec,connection,keepalive,recievFr,changeRole);
+            changedRoles = false;
+        }
     }
     else {
         while(*keepalive && !changedRoles){
@@ -511,14 +519,17 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *changeRole = true;
                     start = time(nullptr);
                    // *recievFr =  true;
-
-
                 }
                 *rec = true;
                 start = time(nullptr);
             }
         }
 
+        if (changedRoles){
+            *changeRole = false;
+            changedRoles = false;
+            receiveM(rec, connection, keepalive, recievFr, changeRole);
+        }
     }
 }
 
