@@ -233,7 +233,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                             cin >> fragmentSize;
                         }
                     }
-                    char text[message.size() + 1];
+                    char text[message.size()];
                     for(int i = 0; i < message.size(); i++){
                         text[i] = message[i];
                     }
@@ -244,7 +244,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                     cout <<text[0];cout <<text[0];
 
 
-                    text[message.size()] = '\0';
+                    //text[message.size()] = '\0';
                     if(message.size() > fragmentSize){
                         int number;
                         if(message.size()%fragmentSize == 0){
