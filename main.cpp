@@ -14,7 +14,7 @@ using namespace std;
 static string role;
 static int dataLenght = 1400;
 static int listening_port = 20000;
-static bool endConnection = false, sendData = false, receiveData = false;
+static bool endConnection = false,changedRoles = false, sendData = false, receiveData = false;
 
 static SOCKADDR_IN serverAddress;
 static sockaddr_in clientAdd, serverAdd;
@@ -32,8 +32,8 @@ struct Header {
 
 void codeMessage(Header * header, char text[], int text_size, char message[]);
 void decodeMessage(Header *header1, char text[], int text_size, char message[]);
-void receiveM(bool * rec, bool * connection, bool * keepalive, bool *recievFr);
-void sendM(bool * rec, bool *connection, bool *keepalive, bool *recievFr);
+void receiveM(bool * rec, bool * connection, bool * keepalive, bool *recievFr, bool  *changeRole);
+void sendM(bool * rec, bool *connection, bool *keepalive, bool *recievFr, bool  *changeRole);
 string toBinary(int number);
 
 int main() {
@@ -44,12 +44,12 @@ int main() {
     cin >> role;
     while(!correctRole){
         if(strcmpi(role.c_str(),"klient") == 0){
-            cout << "Vybral si rolu klienta" << endl;
+            cout << "ROLA KLIENTA " << endl;
             role = "klient";
             correctRole = true;
         }
         else if(strcmpi(role.c_str(),"server") == 0){
-            cout << "Vybral si rolu servera" << endl;
+            cout << "ROLA SERVERA" << endl;
             role = "server";
             correctRole = true;
         }
@@ -79,6 +79,7 @@ int main() {
 
         // Vytvorenie socketu
         clientS = socket(AF_INET,SOCK_DGRAM, 0);
+        serverS = clientS;
         if (clientS == INVALID_SOCKET) {
             std::cerr << "Nepodaril sa vytvorit socket." << std::endl;
             WSACleanup();
@@ -97,15 +98,29 @@ int main() {
             return 1;
         }
 
-        bool rec = true, connection = false , keepalive = true, recievFr = false;
-        thread t1(sendM, &rec ,&connection, &keepalive, &recievFr);
-        thread t2(receiveM,&rec, &connection, &keepalive, &recievFr);
+        bool rec = true, connection = false , keepalive = true, recievFr = false, changeRole = false;
+        while (!endConnection) {
+            if(changedRoles) {
+                changedRoles = false;
+                if(role == "klient"){
+                    role = "server";
+                }
+                else role = "klient";
 
-        t1.join();
-        t2.join();
+//                if(!rec) rec = true;
+//                else rec = false;
+            }
+            thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole);
+            thread t2(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole);
+            t1.join();
+            t2.join();
+        }
+
 
     }
     else if(role == "server"){
+        cout << "Zadaj port na akom budes pocuvat" << endl;
+        cin >> listening_port;
     // Vytvorenie socketu
         serverS = socket(AF_INET,SOCK_DGRAM, 0);
         if (serverS == INVALID_SOCKET) {
@@ -126,12 +141,27 @@ int main() {
             WSACleanup();
             return 1;
         }
-        bool rec = false, connection = false, keepalive = true, recievFr = false;
-        thread t1(sendM, &rec ,&connection,&keepalive, &recievFr);
-        thread t2(receiveM,&rec, &connection, &keepalive, &recievFr);
+        bool rec = false, connection = false, keepalive = true, recievFr = false, changeRole = false;
+        while (!endConnection) {
+            cout << "hladam sa";
+            if(changedRoles) {
 
-        t1.join();
-        t2.join();
+                changedRoles = false;
+                if(role == "klient"){
+                    role = "server";
+                }
+                else role = "klient";
+
+//                if(!rec) rec = true;
+//                else rec = false;
+            }
+            thread t1(sendM, &rec, &connection, &keepalive, &recievFr, &changeRole);
+            thread t2(receiveM, &rec, &connection, &keepalive, &recievFr, &changeRole);
+
+            t1.join();
+            t2.join();
+
+        }
     }
 
     return 0;
@@ -176,10 +206,10 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
     }
 }
 
-void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
+void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool *changeRole){
     if(role == "klient"){
         int i = 0;
-        while(*keepalive){
+        while(*keepalive && !changedRoles){
 
             if((time(nullptr)-start) >= 5 && *connection && i < 3){
                 i++;
@@ -206,11 +236,12 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
             }
             if(*rec && *connection){
                 int choice;
-                cout << "Chces poslat spravu(1) alebo subor(2)?";
+                cout << "rola " << role;
+                cout << "Vyber co chces spravit :" << endl << "- poslat spravu(1)" <<endl << "- poslat subor(2)?" <<endl << "- inicializovat vymenu roli(3)";
                 cin >> choice;
-                if(choice != 1 && choice != 2){
-                    while(choice != 1 && choice != 2){
-                        cout << "Zadal si nespravny typ, pre spravu napis 1 , pre subor 2";
+                if(choice != 1 && choice != 2 && choice != 3){
+                    while(choice != 1 && choice != 2 && choice != 3){
+                        cout << "Zadal si nespravny typ, pre spravu napis 1 , pre subor 2 , vymena roli 3";
                         cin >> choice;
                     }
                 }
@@ -233,31 +264,25 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                             cin >> fragmentSize;
                         }
                     }
-                    char text[message.size()];
+                    char text[message.size()+1];
                     for(int i = 0; i < message.size(); i++){
                         text[i] = message[i];
                     }
-                    cout << text << endl;
-                    cout <<text[0];
-                    cout <<text[0];
-                    cout <<text[0];
-                    cout <<text[0];cout <<text[0];
+                    text[message.size()] = '\0';
 
-
-                    //text[message.size()] = '\0';
                     if(message.size() > fragmentSize){
                         int number;
-                        if(message.size()%fragmentSize == 0){
-                            number = message.size()/fragmentSize;
+                        if((message.size()%fragmentSize == 0)){
+                            number = ((int)message.size()/fragmentSize);
                         }
-                        else number = ((int)(message.size()/fragmentSize)) + 1;
+                        else number = (((int)message.size()/fragmentSize) + 1);
 
                         int a = 0;
-                        char toSend[fragmentSize];
+                        char toSend[fragmentSize + 1];
                         for(int i = 0; i < fragmentSize ; i++){
                             toSend[i] = text[i];
-                            cout << i;
                         }
+                        toSend[fragmentSize] = '\0';
 
                         Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, 0};
                         char message[sizeof(toSend) + sizeof(header)];
@@ -272,12 +297,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                         while(a < number){
 
                             if(*recievFr){
-                                char toSend[fragmentSize];
-                                cout << a*fragmentSize << " " << (a+1)*fragmentSize;
+                                char toSend[fragmentSize + 1];
                                 for(int i = (a*fragmentSize); i < ((a+1)*fragmentSize) ; i++){
                                     toSend[i - a*fragmentSize] = text[i];
                                 }
-                                cout << toSend << " " << a;
+                                toSend[fragmentSize] = '\0';
                                 a++;
                                 Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , 0};
                                 char message[sizeof(toSend) + sizeof(header)];
@@ -306,16 +330,31 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                     }
                     //cout << message << endl << message.size();
                 }
-                else {
+                // posielanie soboru
+                else if(choice == 2){
 
+                }
+                // vymena roli
+                else if(choice == 3){
+                    char text[] = "Chcel by som si vymenit rolu ";
+                    Header header{0b10000000, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, 0};
+                    char message[sizeof(text) + sizeof(header)];
+
+                    codeMessage(&header, text, sizeof(text), message);
+                    sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                           sizeof(serverAddress));
+                    *rec = false;
+                    start = time(nullptr);
+                    *changeRole = true;
+                    cout << "rola " << role;
                 }
                 start = time(nullptr);
             }
         }
     }
     else {
-        while(*keepalive){
-            if(*rec && *connection && !*recievFr){
+        while(*keepalive && !changedRoles){
+            if(*rec && *connection && !*recievFr && !*changeRole){
                 char text[] = "Nadviazane spojenie";
                 Header header {0b00000010,sizeof(text) + 9,1,1,0};
                 char message[sizeof(text) + sizeof(header)];
@@ -334,6 +373,23 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
                 //*recievFr = false;
                 start = time(nullptr);
             }
+            else if(*connection && *rec && *changeRole){
+                cout <<"ack";
+                char text[] = "ACK na vymenu roli";
+                Header header {0b00000010,sizeof(text) + 9,1,1,0};
+                char message[sizeof(text) + sizeof(header)];
+                codeMessage(&header,text,sizeof(text),message);
+                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+               // *rec = false;
+                //*recievFr = false;
+                start = time(nullptr);
+                role = "klient";
+                serverAdd = clientAdd;
+                cout << "rola " << role;
+                *changeRole = false;
+                changedRoles= true;
+                sendM(rec,connection,keepalive,recievFr,changeRole);
+            }
             //cout << "huhuhuhuhuhuh" << endl;
 //            cout << start <<endl << time(0) <<endl << (time(0)-start)<<endl;
 //            time(0);
@@ -341,28 +397,31 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr){
             time_t d = (time(nullptr)-start);
             if((d) > 120 && *connection){
                 *keepalive = false;
-
-
             }
         }
 
-        char text[] = "Ukoncenie spojenia";
-        Header header {0b01000000,sizeof(text) + 9,1,1,0};
-        char message[sizeof(text) + sizeof(header)];
-        codeMessage(&header,text,sizeof(text),message);
-        sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
-        *rec = false;
-        closesocket(serverS);
-        closesocket(clientS);
-        WSACleanup();
-        return;
+        if(!changedRoles){
+            cout << "end connecrion";
+            char text[] = "Ukoncenie spojenia";
+            Header header {0b01000000,sizeof(text) + 9,1,1,0};
+            char message[sizeof(text) + sizeof(header)];
+            codeMessage(&header,text,sizeof(text),message);
+            sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+            *rec = false;
+            closesocket(serverS);
+            closesocket(clientS);
+            WSACleanup();
+            endConnection = true;
+            return;
+        }
+
 
     }
 }
 
-void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr){
+void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , bool  *changeRole){
     if(role == "klient"){
-        while(*keepalive){
+        while(*keepalive && !changedRoles){
             char buffer[1500];
             int size = sizeof(serverAdd);
 
@@ -373,46 +432,86 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr){
                 decodeMessage(&header1,data, sizeof(data),buffer);
                 if(toBinary((int)header1.type) == "00000010" && !*connection){
                     *connection = true;
+                    *rec = true;
 
                 }
                 else if(toBinary((int)header1.type) == "01000000" && *connection){
                     *keepalive = false;
+                    *rec = true;
 
                 }
-                else if(toBinary((int)header1.type) == "00000010" && *connection){
+                else if(toBinary((int)header1.type) == "00000010" && *connection && !*changeRole){
                     if(!*recievFr) *recievFr = true;
+                    *rec = true;
+                }
+                //*rec = true;
+                else if(toBinary((int)header1.type) == "00000010" && *connection && *changeRole){
+                    cout << "mozeme zo spravit";
+                    role = "server";
+                    *changeRole = false;
+                    changedRoles = true;
+                    clientAdd = serverAdd;
+                    *rec = false;
+                    receiveM(rec,connection,keepalive,recievFr,changeRole);
                 }
                 std::cout << "Received from server: " << data << std::endl;
-                *rec = true;
+
             }
         }
-        closesocket(serverS);
-        closesocket(clientS);
-        WSACleanup();
-        return;
+
+        if(!changedRoles){
+            closesocket(serverS);
+            closesocket(clientS);
+            WSACleanup();
+            return;
+        }
+
     }
     else {
         //start = time(0);
-        while(*keepalive){
+        string textMess;
+        while(*keepalive && !changedRoles){
 
             char message[1500];
             int size = sizeof(clientAdd);
-
+            string dat ;
             int recievedByt = recvfrom(serverS, message, sizeof(message), 0, reinterpret_cast<SOCKADDR *>(&clientAdd),&size);
             if (recievedByt > 0) {
                 char data[recievedByt - 9];
                 Header header1;
+
                 decodeMessage(&header1,data, sizeof(data),message);
-                std::cout << "Received from klient: " << data << std::endl;
+
                 if(toBinary((int)header1.type) == "00000001"){
                     *connection = true;
                     start = time(nullptr);
-
+                    std::cout << "Received from klient: " << data << std::endl;
                 }
                 else if(toBinary((int)header1.type) == "00000100"){
                     //*connection = true;
+                    cout << "Received fragment from klient: " << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
+                    textMess.append(data);
                     start = time(nullptr);
                     *recievFr =  true;
+                    if(header1.fragmentInSequence == header1.numberOfFragments){
+                        cout << "Received MESSAGE from klient: " << textMess << endl;
+                        textMess.clear();
+                    }
+
+
+                }
+                else if(toBinary((int)header1.type) == "10000000"){
+                    //*connection = true;
+                    string choice;
+                    cout << "Received message from klient: "<< data << endl;
+//                    cin >> choice;
+//                    if(choice == "ano"){
+//                        *changeRole = true;
+//                    }
+                    *changeRole = true;
+                    start = time(nullptr);
+                   // *recievFr =  true;
+
 
                 }
                 *rec = true;
