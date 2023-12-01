@@ -34,7 +34,7 @@ void codeMessage(Header * header, char text[], int text_size, char message[]);
 void decodeMessage(Header *header1, char text[], int text_size, char message[]);
 void receiveM(bool * rec, bool * connection, bool * keepalive, bool *recievFr, bool  *changeRole);
 void sendM(bool * rec, bool *connection, bool *keepalive, bool *recievFr, bool  *changeRole);
-void changeRoleTo(string newRole, bool *rec);
+void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole);
 string toBinary(int number);
 
 int main() {
@@ -397,7 +397,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 cout << "rola " << role;
                 *changeRole = false;
                 //changedRoles= true;
-                changeRoleTo("klient",rec);
+                changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole);
                 //sendM(rec,connection,keepalive,recievFr,changeRole);
             }
             //cout << "huhuhuhuhuhuh" << endl;
@@ -462,7 +462,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     changedRoles = true;
                     clientAdd = serverAdd;
                     *rec = false;
-                    changeRoleTo("server",rec);
+                    changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole);
                    // receiveM(rec,connection,keepalive,recievFr,changeRole);
                 }
                 std::cout << "Received from server: " << data << std::endl;
@@ -554,7 +554,7 @@ string toBinary(int number){
 
 }
 
-void changeRoleTo(string newRole, bool *rec){
+void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole){
     if (newRole == "klient") {
         // Zatvorenie existujúceho spojenia (ak existuje)
         closesocket(clientS);
@@ -578,7 +578,10 @@ void changeRoleTo(string newRole, bool *rec){
 
         // Nastavenie role
         role = "klient";
-
+        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole);
+        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole);
+        t1.join();
+        t2.join();
 //        // Spustenie vlákna na odosielanie a prijímanie správ
 //        thread t1(sendM,&rec);
 //        thread t2(receiveM, ...);
@@ -607,5 +610,9 @@ void changeRoleTo(string newRole, bool *rec){
 
         // Nastavenie role
         role = "server";
+        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole);
+        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole);
+        t1.join();
+        t2.join();
     }
 }
