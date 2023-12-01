@@ -3,6 +3,7 @@
 #include <string>
 #include <thread>
 #include <windows.h>
+#include <fstream>
 
 /**
  * Stiahnutá knižnica z github.com
@@ -269,11 +270,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                             cin >> fragmentSize;
                         }
                     }
-                    char text[message.size()+1];
+                    char text[message.size()];
                     for(int i = 0; i < message.size(); i++){
                         text[i] = message[i];
                     }
-                    text[message.size()] = '\0';
+                    //text[message.size()] = '\0';
 
                     if(message.size() > fragmentSize){
                         int number;
@@ -283,11 +284,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         else number = (((int)message.size()/fragmentSize) + 1);
 
                         int a = 0;
-                        char toSend[fragmentSize + 1];
+                        char toSend[fragmentSize];
                         for(int i = 0; i < fragmentSize ; i++){
                             toSend[i] = text[i];
                         }
-                        toSend[fragmentSize] = '\0';
+                       // toSend[fragmentSize] = '\0';
 
                         Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, 0};
                         char message[sizeof(toSend) + sizeof(header)];
@@ -302,11 +303,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         while(a < number){
 
                             if(*recievFr){
-                                char toSend[fragmentSize + 1];
+                                char toSend[fragmentSize ];
                                 for(int i = (a*fragmentSize); i < ((a+1)*fragmentSize) ; i++){
                                     toSend[i - a*fragmentSize] = text[i];
                                 }
-                                toSend[fragmentSize] = '\0';
+                                //toSend[fragmentSize] = '\0';
                                 a++;
                                 Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , 0};
                                 char message[sizeof(toSend) + sizeof(header)];
@@ -323,7 +324,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 
                     }
                     else {
-                        //char text[] = "Posielam textovu spravu";
+                        //char text[] = "Posielam celu textovu spravu";
                         Header header{0b000000100, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, 0};
                         char message[sizeof(text) + sizeof(header)];
 
@@ -337,6 +338,88 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 }
                 // posielanie soboru
                 else if(choice == 2){
+                    char file[] = "file.txt";
+                    ifstream send_file;
+                    send_file.open (file, ios::in | ios :: binary);
+                    send_file.seekg(0, ios::end);
+                    int file_size = send_file.tellg();
+                    send_file.seekg(0, ios::beg);
+
+                    // citanie suboru
+                    char file_data[file_size];
+                    for(int i = 0 ; i < file_size; i++){
+                        file_data[i] = send_file.get();
+                    }
+                    send_file.close();
+
+                    int fragmentSize;
+                    cout << "Zadaj velkost fragmentu (max 1464B)" << endl;
+                    cin >> fragmentSize;
+                    if(fragmentSize > 1464){
+                        while(fragmentSize > 1464){
+                            cout << "Zadal si prilis velku velkost fragmentu zvol (do 1464)";
+                            cin >> fragmentSize;
+                        }
+                    }
+                    if(file_size> fragmentSize){
+                        int number;
+                        if((file_size%fragmentSize == 0)){
+                            number = ((int)file_size/fragmentSize);
+                        }
+                        else number = (((int)file_size/fragmentSize) + 1);
+
+                        int a = 0;
+//                        char toSend[fragmentSize];
+//                        for(int i = 0; i < fragmentSize ; i++){
+//                            toSend[i] = text[i];
+//                        }
+
+                        Header header{0b10000001, static_cast<unsigned short>(sizeof(file) + 9), static_cast<unsigned short>(number), 0, 0};
+                        char message[sizeof(file) + sizeof(header)];
+                        codeMessage(&header, file, sizeof(file), message);
+                        sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                               sizeof(serverAddress));
+                        *rec = false;
+                        *recievFr = false;
+                        start = time(nullptr);
+//                        a++;
+
+                        while(a < number){
+
+                            if(*recievFr){
+                                char toSend[fragmentSize];
+                                for(int i = (a*fragmentSize); i < ((a+1)*fragmentSize) ; i++){
+                                    toSend[i - a*fragmentSize] = file_data[i];
+                                }
+                                a++;
+                                Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , 0};
+                                char message[sizeof(toSend) + sizeof(header)];
+                                codeMessage(&header, toSend, sizeof(toSend), message);
+                                sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                                       sizeof(serverAddress));
+                                *rec = false;
+                                *recievFr = false;
+                                start = time(nullptr);
+                            }
+                        }
+
+
+
+                    }
+                    else {
+                        //char text[] = "Posielam celu textovu spravu";
+                        Header header{0b000000100, static_cast<unsigned short>(sizeof(file_data) + 9), 1, 1, 0};
+                        char message[sizeof(file_data) + sizeof(header)];
+
+                        codeMessage(&header, file_data, sizeof(file_data), message);
+                        sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                               sizeof(serverAddress));
+                        *rec = false;
+                        start = time(nullptr);
+                    }
+
+
+
 
                 }
                 // vymena roli
@@ -443,12 +526,12 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 if(toBinary((int)header1.type) == "00000010" && !*connection){
                     *connection = true;
                     *rec = true;
-
+                    cout << "Received from server: " << data << endl;
                 }
                 else if(toBinary((int)header1.type) == "01000000" && *connection){
                     *keepalive = false;
                     *rec = true;
-
+                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
                 }
                 else if(toBinary((int)header1.type) == "00000010" && *connection && !*changeRole){
                     if(!*recievFr) *recievFr = true;
@@ -465,7 +548,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole);
                    // receiveM(rec,connection,keepalive,recievFr,changeRole);
                 }
-                std::cout << "Received from server: " << data << std::endl;
+                cout << "Received from server: " << data << endl;
 
             }
         }
@@ -480,7 +563,11 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
     }
     else {
         //start = time(0);
+        char file_name1[500];
+        char *fileText = nullptr;
+        int size;
         string textMess;
+        boolean file = false;
         while(*keepalive && !changedRoles){
 
             char message[1500];
@@ -500,14 +587,27 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 }
                 else if(toBinary((int)header1.type) == "00000100"){
                     //*connection = true;
-                    cout << "Received fragment from klient: " << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
-                    textMess.append(data);
+
+                    if(header1.fragmentInSequence == 0){
+                        file = true;
+
+                        strcpy(file_name1,data);
+                        cout << "Received file name from klient: " << data << endl;
+                    }
+                    if(file){
+
+                    }
+                    else {
+                        textMess.append(data);
+                        textMess.append("\0");
+
+                        if(header1.fragmentInSequence == header1.numberOfFragments){
+                            cout << "Received MESSAGE from klient: " << textMess << endl;
+                            textMess.clear();
+                        }
+                    }
                     start = time(nullptr);
                     *recievFr =  true;
-                    if(header1.fragmentInSequence == header1.numberOfFragments){
-                        cout << "Received MESSAGE from klient: " << textMess << endl;
-                        textMess.clear();
-                    }
 
 
                 }
