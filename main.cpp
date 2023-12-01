@@ -270,11 +270,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                             cin >> fragmentSize;
                         }
                     }
-                    char text[message.size()];
+                    char text[message.size()+1];
                     for(int i = 0; i < message.size(); i++){
                         text[i] = message[i];
                     }
-                    //text[message.size()] = '\0';
+                    text[message.size()] = '\0';
 
                     if(message.size() > fragmentSize){
                         int number;
@@ -284,11 +284,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         else number = (((int)message.size()/fragmentSize) + 1);
 
                         int a = 0;
-                        char toSend[fragmentSize];
+                        char toSend[fragmentSize + 1];
                         for(int i = 0; i < fragmentSize ; i++){
                             toSend[i] = text[i];
                         }
-                       // toSend[fragmentSize] = '\0';
+                        toSend[fragmentSize] = '\0';
 
                         Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, 0};
                         char message[sizeof(toSend) + sizeof(header)];
@@ -303,11 +303,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         while(a < number){
 
                             if(*recievFr){
-                                char toSend[fragmentSize ];
+                                char toSend[fragmentSize + 1];
                                 for(int i = (a*fragmentSize); i < ((a+1)*fragmentSize) ; i++){
                                     toSend[i - a*fragmentSize] = text[i];
                                 }
-                                //toSend[fragmentSize] = '\0';
+                                toSend[fragmentSize] = '\0';
                                 a++;
                                 Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , 0};
                                 char message[sizeof(toSend) + sizeof(header)];
@@ -346,11 +346,12 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     send_file.seekg(0, ios::beg);
 
                     // citanie suboru
-                    char file_data[file_size];
+                    char file_data[file_size + 1];
                     for(int i = 0 ; i < file_size; i++){
                         file_data[i] = send_file.get();
                     }
                     send_file.close();
+                    file_data[file_size] = '\0';
 
                     int fragmentSize;
                     cout << "Zadaj velkost fragmentu (max 1464B)" << endl;
@@ -374,7 +375,8 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 //                            toSend[i] = text[i];
 //                        }
 
-                        Header header{0b10000001, static_cast<unsigned short>(sizeof(file) + 9), static_cast<unsigned short>(number), 0, 0};
+                        // posielanie nazvu suboru
+                        Header header{0b00000100, static_cast<unsigned short>(sizeof(file) + 9), static_cast<unsigned short>(number), 0, 0};
                         char message[sizeof(file) + sizeof(header)];
                         codeMessage(&header, file, sizeof(file), message);
                         sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -387,9 +389,10 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         while(a < number){
 
                             if(*recievFr){
-                                char toSend[fragmentSize];
+                                char toSend[fragmentSize + 1];
                                 for(int i = (a*fragmentSize); i < ((a+1)*fragmentSize) ; i++){
                                     toSend[i - a*fragmentSize] = file_data[i];
+                                    toSend[fragmentSize] = '\0';
                                 }
                                 a++;
                                 Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , 0};
@@ -407,7 +410,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 
                     }
                     else {
-                        //char text[] = "Posielam celu textovu spravu";
+                        //char text[] = "Posielam cely subor";
                         Header header{0b000000100, static_cast<unsigned short>(sizeof(file_data) + 9), 1, 1, 0};
                         char message[sizeof(file_data) + sizeof(header)];
 
@@ -564,9 +567,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
     else {
         //start = time(0);
         char file_name1[500];
-        char *fileText = nullptr;
-        int size;
-        string textMess;
+        string textMess,file_data;
         boolean file = false;
         while(*keepalive && !changedRoles){
 
@@ -590,16 +591,19 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 
                     if(header1.fragmentInSequence == 0){
                         file = true;
-
                         strcpy(file_name1,data);
                         cout << "Received file name from klient: " << data << endl;
                     }
                     if(file){
+                        file_data.append(data);
 
+                        if(header1.fragmentInSequence == header1.numberOfFragments){
+                            cout << "Received subor from klient: " << textMess << endl;
+                            file_data.clear();
+                        }
                     }
                     else {
                         textMess.append(data);
-                        textMess.append("\0");
 
                         if(header1.fragmentInSequence == header1.numberOfFragments){
                             cout << "Received MESSAGE from klient: " << textMess << endl;
