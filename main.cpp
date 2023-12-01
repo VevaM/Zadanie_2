@@ -615,7 +615,8 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                         cout << "Received file name from klient: " << data << endl;
                     }
                     if(file){
-                        file_data.append(data);
+                        if(header1.fragmentInSequence > 0)file_data.append(data);
+
                         if(header1.fragmentInSequence == header1.numberOfFragments){
                             cout << "Received subor from klient: " << file_data << endl;
                             file_data.clear();
