@@ -262,11 +262,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     cin.clear();
                     getline(cin,message,'#');
 //                    message.append("\0");
-                    cout << "Zadaj velkost fragmentu (max 1463B)" << endl;
+                    cout << "Zadaj velkost fragmentu (max 1462B)" << endl;
                     cin >> fragmentSize;
-                    if(fragmentSize > 1463){
-                        while(fragmentSize > 1463){
-                            cout << "Zadal si prilis velku velkost fragmentu zvol (do 1463)";
+                    if(fragmentSize > 1462){
+                        while(fragmentSize > 1462){
+                            cout << "Zadal si prilis velku velkost fragmentu zvol (do 1462)";
                             cin >> fragmentSize;
                         }
                     }
@@ -336,9 +336,14 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     }
                     //cout << message << endl << message.size();
                 }
-                // posielanie soboru
+                // posielanie suboru
                 else if(choice == 2){
-                    char file[] = "file.txt";
+                    cout << "Zadaj cestu/nazov suboru" << endl;
+                    string path;
+                    cin >> path;
+                    char file[path.size() + 1];
+                    strcpy(file, path.c_str());
+                    
                     ifstream send_file;
                     send_file.open (file, ios::in | ios :: binary);
                     send_file.seekg(0, ios::end);
@@ -354,11 +359,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     file_data[file_size] = '\0';
 
                     int fragmentSize;
-                    cout << "Zadaj velkost fragmentu (max 1463B)" << endl;
+                    cout << "Zadaj velkost fragmentu (max 1462B)" << endl;
                     cin >> fragmentSize;
-                    if(fragmentSize > 1463){
-                        while(fragmentSize > 1463){
-                            cout << "Zadal si prilis velku velkost fragmentu zvol (do 1463)";
+                    if(fragmentSize > 1462){
+                        while(fragmentSize > 1462){
+                            cout << "Zadal si prilis velku velkost fragmentu zvol (do 1462)";
                             cin >> fragmentSize;
                         }
                     }
@@ -620,12 +625,15 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                         if(header1.fragmentInSequence == header1.numberOfFragments){
                             ofstream writeFile;
                             sizeOfFile += header1.lenght;
-                            cout << "FILE SIZE " << sizeOfFile;
-                            writeFile.open("subor.txt", ios::binary | ios::out);
+                            string path;
+                            cout << "Zadaj kam chces ulozit subor" << endl;
+                            cin >>  path;
+                            path.append(file_name1);
+                            writeFile.open(path, ios::binary | ios::out);
                             const char* str = file_data.c_str();
                             writeFile.write(str,sizeOfFile);
 
-                            cout << "Received subor from klient: " << file_data << endl;
+                            cout << "Received file from klient : " << file_name1 << endl;
                             file_data.clear();
                         }
                     }
