@@ -410,15 +410,35 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 
                     }
                     else {
-                        //char text[] = "Posielam cely subor";
-                        Header header{0b000000100, static_cast<unsigned short>(sizeof(file_data) + 9), 1, 1, 0};
-                        char message[sizeof(file_data) + sizeof(header)];
 
-                        codeMessage(&header, file_data, sizeof(file_data), message);
+                        Header header{0b00000100, static_cast<unsigned short>(sizeof(file) + 9), 1, 0, 0};
+                        char message[sizeof(file) + sizeof(header)];
+                        codeMessage(&header, file, sizeof(file), message);
                         sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
                                sizeof(serverAddress));
                         *rec = false;
+                        *recievFr = false;
                         start = time(nullptr);
+                        cout << "idem tu";
+                        int a = 0;
+
+                        while(a != 1){
+                            if(*recievFr){
+                                //char text[] = "Posielam cely subor";
+                                Header header{0b000000100, static_cast<unsigned short>(sizeof(file_data) + 9), 1, 1, 0};
+                                char message[sizeof(file_data) + sizeof(header)];
+
+                                codeMessage(&header, file_data, sizeof(file_data), message);
+                                sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                                       sizeof(serverAddress));
+                                *rec = false;
+                                start = time(nullptr);
+                                a++;
+                            }
+                        }
+
+
+
                     }
 
 
@@ -596,9 +616,8 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     }
                     if(file){
                         file_data.append(data);
-
                         if(header1.fragmentInSequence == header1.numberOfFragments){
-                            cout << "Received subor from klient: " << textMess << endl;
+                            cout << "Received subor from klient: " << file_data << endl;
                             file_data.clear();
                         }
                     }
