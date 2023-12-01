@@ -34,6 +34,7 @@ void codeMessage(Header * header, char text[], int text_size, char message[]);
 void decodeMessage(Header *header1, char text[], int text_size, char message[]);
 void receiveM(bool * rec, bool * connection, bool * keepalive, bool *recievFr, bool  *changeRole);
 void sendM(bool * rec, bool *connection, bool *keepalive, bool *recievFr, bool  *changeRole);
+void changeRoleTo(string newRole, bool *rec);
 string toBinary(int number);
 
 int main() {
@@ -122,7 +123,7 @@ int main() {
     else if(role == "server"){
         cout << "Zadaj port na akom budes pocuvat" << endl;
         cin >> listening_port;
-    // Vytvorenie socketu
+        // Vytvorenie socketu
         serverS = socket(AF_INET,SOCK_DGRAM, 0);
         clientS = serverS;
         if (serverS == INVALID_SOCKET) {
@@ -355,10 +356,10 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 start = time(nullptr);
             }
         }
-        if (changedRoles) {
-            sendM(rec,connection,keepalive,recievFr,changeRole);
-            changedRoles = false;
-        }
+//        if (changedRoles) {
+//            sendM(rec,connection,keepalive,recievFr,changeRole);
+//            changedRoles = false;
+//        }
     }
     else {
         while(*keepalive && !changedRoles){
@@ -395,8 +396,9 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 serverAdd = clientAdd;
                 cout << "rola " << role;
                 *changeRole = false;
-                changedRoles= true;
-                sendM(rec,connection,keepalive,recievFr,changeRole);
+                //changedRoles= true;
+                changeRoleTo("klient",rec);
+                //sendM(rec,connection,keepalive,recievFr,changeRole);
             }
             //cout << "huhuhuhuhuhuh" << endl;
 //            cout << start <<endl << time(0) <<endl << (time(0)-start)<<endl;
@@ -455,12 +457,13 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 //*rec = true;
                 else if(toBinary((int)header1.type) == "00000010" && *connection && *changeRole){
                     cout << "mozeme zo spravit";
-                    role = "server";
+                   // role = "server";
                     *changeRole = false;
                     changedRoles = true;
                     clientAdd = serverAdd;
                     *rec = false;
-                    receiveM(rec,connection,keepalive,recievFr,changeRole);
+                    changeRoleTo("server",rec);
+                   // receiveM(rec,connection,keepalive,recievFr,changeRole);
                 }
                 std::cout << "Received from server: " << data << std::endl;
 
@@ -525,11 +528,11 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
             }
         }
 
-        if (changedRoles){
-            *changeRole = false;
-            changedRoles = false;
-            receiveM(rec, connection, keepalive, recievFr, changeRole);
-        }
+//        if (changedRoles){
+//            *changeRole = false;
+//            changedRoles = false;
+//            receiveM(rec, connection, keepalive, recievFr, changeRole);
+//        }
     }
 }
 
@@ -549,4 +552,60 @@ string toBinary(int number){
     }
     return binary;
 
+}
+
+void changeRoleTo(string newRole, bool *rec){
+    if (newRole == "klient") {
+        // Zatvorenie existujúceho spojenia (ak existuje)
+        closesocket(clientS);
+
+        // Vytvorenie nového soketu pre klienta
+        clientS = socket(AF_INET, SOCK_DGRAM, 0);
+
+        // Nastavenie adresy a portu servera, ku ktorému sa chce pripojiť
+        serverAddress.sin_family = AF_INET;
+        serverAddress.sin_port = htons(listening_port);
+        string add = "192.168.1.15";
+        serverAddress.sin_addr.s_addr = inet_addr(add.c_str());
+
+        // Pripojenie k serveru
+        if (connect(clientS, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
+            std::cerr << "Nepodarilo sa pripojiť na server" << std::endl;
+            closesocket(clientS);
+            WSACleanup();
+            exit (1);
+        }
+
+        // Nastavenie role
+        role = "klient";
+
+//        // Spustenie vlákna na odosielanie a prijímanie správ
+//        thread t1(sendM,&rec);
+//        thread t2(receiveM, ...);
+//        t1.join();
+//        t2.join();
+    }
+    else{
+        // Zatvorenie existujúceho spojenia (ak existuje)
+        closesocket(serverS);
+
+        // Vytvorenie nového soketu pre server
+        serverS = socket(AF_INET, SOCK_DGRAM, 0);
+
+        // Nastavenie adresy a portu, na ktorom server bude naslúchať
+        serverAddress.sin_family = AF_INET;
+        serverAddress.sin_port = htons(listening_port);
+        serverAddress.sin_addr.s_addr = INADDR_ANY;
+
+        // Pripojenie soketu k určenej adrese a porte
+        if (bind(serverS, reinterpret_cast<SOCKADDR*>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
+            std::cerr << "Nepodarilo sa nastaviť soket!" << std::endl;
+            closesocket(serverS);
+            WSACleanup();
+            exit(1);
+        }
+
+        // Nastavenie role
+        role = "server";
+    }
 }
