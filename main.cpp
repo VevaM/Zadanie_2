@@ -344,7 +344,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     send_file.seekg(0, ios::end);
                     int file_size = send_file.tellg();
                     send_file.seekg(0, ios::beg);
-
+                    cout << "FILE SIZE " << file_size;
                     // citanie suboru
                     char file_data[file_size + 1];
                     for(int i = 0 ; i < file_size; i++){
@@ -354,11 +354,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     file_data[file_size] = '\0';
 
                     int fragmentSize;
-                    cout << "Zadaj velkost fragmentu (max 1464B)" << endl;
+                    cout << "Zadaj velkost fragmentu (max 1463B)" << endl;
                     cin >> fragmentSize;
-                    if(fragmentSize > 1464){
-                        while(fragmentSize > 1464){
-                            cout << "Zadal si prilis velku velkost fragmentu zvol (do 1464)";
+                    if(fragmentSize > 1463){
+                        while(fragmentSize > 1463){
+                            cout << "Zadal si prilis velku velkost fragmentu zvol (do 1463)";
                             cin >> fragmentSize;
                         }
                     }
@@ -419,7 +419,6 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         *rec = false;
                         *recievFr = false;
                         start = time(nullptr);
-                        cout << "idem tu";
                         int a = 0;
 
                         while(a != 1){
@@ -589,6 +588,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
         char file_name1[500];
         string textMess,file_data;
         boolean file = false;
+        int sizeOfFile = 0;
         while(*keepalive && !changedRoles){
 
             char message[1500];
@@ -618,6 +618,13 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                         if(header1.fragmentInSequence > 0)file_data.append(data);
 
                         if(header1.fragmentInSequence == header1.numberOfFragments){
+                            ofstream writeFile;
+                            sizeOfFile += header1.lenght;
+                            cout << "FILE SIZE " << sizeOfFile;
+                            writeFile.open("subor.txt", ios::binary | ios::out);
+                            const char* str = file_data.c_str();
+                            writeFile.write(str,sizeOfFile);
+
                             cout << "Received subor from klient: " << file_data << endl;
                             file_data.clear();
                         }
