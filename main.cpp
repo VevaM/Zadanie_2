@@ -343,7 +343,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     cin >> path;
                     char file[path.size() + 1];
                     strcpy(file, path.c_str());
-                    
+
                     ifstream send_file;
                     send_file.open (file, ios::in | ios :: binary);
                     send_file.seekg(0, ios::end);
@@ -369,10 +369,14 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     }
                     if(file_size> fragmentSize){
                         int number;
+                        int rest = 0;
                         if((file_size%fragmentSize == 0)){
                             number = ((int)file_size/fragmentSize);
                         }
-                        else number = (((int)file_size/fragmentSize) + 1);
+                        else {
+                            number = (((int)file_size/fragmentSize) + 1);
+                            rest = ((number - 1 )*fragmentSize)-file_size;
+                        }
 
                         int a = 0;
 //                        char toSend[fragmentSize];
@@ -400,8 +404,16 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     toSend[fragmentSize] = '\0';
                                 }
                                 a++;
-                                Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , 0};
-                                char message[sizeof(toSend) + sizeof(header)];
+                                if(rest != 0 && (a == (number-1))){
+                                    Header header{0b000000100, static_cast<unsigned short>(rest + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , 0};
+                                    char message[rest + sizeof(header)];
+                                }
+                                else {
+                                    Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , 0};
+                                    char message[sizeof(toSend) + sizeof(header)];
+                                }
+
+                               
                                 codeMessage(&header, toSend, sizeof(toSend), message);
                                 sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
                                        sizeof(serverAddress));
@@ -620,20 +632,25 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                         cout << "Received file name from klient: " << data << endl;
                     }
                     if(file){
-                        if(header1.fragmentInSequence > 0)file_data.append(data);
+                        if(header1.fragmentInSequence > 0){
+                            file_data.append(data);
+                            cout << header1.fragmentInSequence << " " <<header1.numberOfFragments << endl;
+                            sizeOfFile += header1.lenght;
+                        }
+
 
                         if(header1.fragmentInSequence == header1.numberOfFragments){
                             ofstream writeFile;
-                            sizeOfFile += header1.lenght;
+                           // sizeOfFile += header1.lenght;
                             string path;
                             cout << "Zadaj kam chces ulozit subor" << endl;
                             cin >>  path;
                             path.append(file_name1);
                             writeFile.open(path, ios::binary | ios::out);
                             const char* str = file_data.c_str();
-                            writeFile.write(str,sizeOfFile);
+                            writeFile.write(str,file_data.size());
 
-                            cout << "Received file from klient : " << file_name1 << endl;
+                            cout << "Received file from klient : " << " " << file_data.size() << " " <<  sizeOfFile<< endl;
                             file_data.clear();
                         }
                     }
