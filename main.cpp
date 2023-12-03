@@ -221,7 +221,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
             if((time(nullptr)-start) >= 5 && *connection && i < 3){
                 i++;
                 char text[] = "Posielam keep alive";
-                Header header{0b001000000, sizeof(text) + 9, 1, 1, 0};
+                Header header{0b00100000, sizeof(text) + 9, 1, 1, 0};
                 char message[sizeof(text) + sizeof(header)];
 
                 codeMessage(&header, text, sizeof(text), message);
@@ -232,7 +232,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
             }
             if(*rec && !*connection) {
                 char text[] = "Chcem nadviazat spojenie";
-                Header header{0b000000001, sizeof(text) + 9, 1, 1, 0};
+                Header header{0b00000001, sizeof(text) + 9, 1, 1, 0};
                 char message[sizeof(text) + sizeof(header)];
 
                 codeMessage(&header, text, sizeof(text), message);
@@ -294,7 +294,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 
                         uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
                         cout <<  "crc " <<crc << " " << sizeof(toSend) << endl;
-                        Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, crc};
+                        Header header{0b00000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, crc};
                         char message[sizeof(toSend) + sizeof(header)];
                         codeMessage(&header, toSend, sizeof(toSend), message);
                         sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -330,7 +330,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     }
                                     sendLast[s] =  '\0';
                                     uint16_t crc = CRC::Calculate(sendLast, s + 1,CRC::CRC_16_ARC());
-                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(sendLast) + sizeof(header)];
                                     codeMessage(&header, sendLast, sizeof(sendLast), message);
                                     sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -341,7 +341,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                 }
                                 else {
                                     uint16_t crc = CRC::Calculate(toSend, s + 1,CRC::CRC_16_ARC());
-                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(toSend) + sizeof(header)];
                                     codeMessage(&header, toSend, sizeof(toSend), message);
                                     sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -361,7 +361,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         //char text[] = "Posielam celu textovu spravu";
                         uint16_t crc = CRC::Calculate(text, sizeof(text),CRC::CRC_16_ARC());
                         cout <<  "crc " <<crc << " " << sizeof(text) << endl;
-                        Header header{0b000000100, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, crc};
+                        Header header{0b00000100, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, crc};
                         char message[sizeof(text) + sizeof(header)];
 
                         codeMessage(&header, text, sizeof(text), message);
@@ -475,7 +475,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     }
                                     sendLast[s] =  '\0';
                                     uint16_t crc = CRC::Calculate(sendLast, s + 1 ,CRC::CRC_16_ARC());
-                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(sendLast) + sizeof(header)];
                                     codeMessage(&header, sendLast, sizeof(sendLast), message);
                                     sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -486,7 +486,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                 }
                                 else {
                                     uint16_t crc = CRC::Calculate(toSend, s + 1 ,CRC::CRC_16_ARC());
-                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(toSend) + sizeof(header)];
                                     codeMessage(&header, toSend, sizeof(toSend), message);
                                     sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -534,7 +534,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                             if(*recievFr){
                                 //char text[] = "Posielam cely subor";
                                 uint16_t crc = CRC::Calculate(file, sizeof(file),CRC::CRC_16_ARC());
-                                Header header{0b000000100, static_cast<unsigned short>(sizeof(file_data) + 9), 1, 1, crc};
+                                Header header{0b00000100, static_cast<unsigned short>(sizeof(file_data) + 9), 1, 1, crc};
                                 char message[sizeof(file_data) + sizeof(header)];
 
                                 codeMessage(&header, file_data, sizeof(file_data), message);
