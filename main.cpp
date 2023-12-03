@@ -291,7 +291,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         toSend[fragmentSize] = '\0';
 
                         uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
-                        cout <<  "crc " <<crc;
+                        cout <<  "crc " <<crc << " " << sizeof(toSend) << endl;
                         Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, crc};
                         char message[sizeof(toSend) + sizeof(header)];
                         codeMessage(&header, toSend, sizeof(toSend), message);
@@ -312,7 +312,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                 toSend[fragmentSize] = '\0';
                                 a++;
                                 uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
-                                cout <<  "crc " <<crc;
+                                cout <<  "crc " <<crc << " " << sizeof(toSend) << endl;
                                 Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                 char message[sizeof(toSend) + sizeof(header)];
                                 codeMessage(&header, toSend, sizeof(toSend), message);
@@ -330,7 +330,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     else {
                         //char text[] = "Posielam celu textovu spravu";
                         uint16_t crc = CRC::Calculate(text, sizeof(text),CRC::CRC_16_ARC());
-                        cout <<  "crc " <<crc;
+                        cout <<  "crc " <<crc << " " << sizeof(text) << endl;
                         Header header{0b000000100, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, crc};
                         char message[sizeof(text) + sizeof(header)];
 
@@ -653,7 +653,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 
                 decodeMessage(&header1,data, sizeof(data),message);
                 uint16_t crc = CRC::Calculate(data, sizeof(data),CRC::CRC_16_ARC());
-                cout << "crc " << crc << " " << header1.crc;
+                cout << "crc " << crc << " " << header1.crc <<" s " << sizeof(data);
                 if(toBinary((int)header1.type) == "00000001"){
                     *connection = true;
                     start = time(nullptr);
