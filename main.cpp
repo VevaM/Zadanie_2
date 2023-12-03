@@ -748,7 +748,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *changeRole = false;
                     changedRoles = true;
                     //clientAdd = serverAdd;
-                    *rec = true;
+                    //*rec = true;
                     //niec
                     //*keepalive = false;
                     changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData,end);
