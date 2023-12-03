@@ -343,14 +343,13 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     uint16_t crc = CRC::Calculate(toSend, s + 1,CRC::CRC_16_ARC());
                                     Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(toSend) + sizeof(header)];
-                                    codeMessage(&header, toSend, s, message);
+                                    codeMessage(&header, toSend, sizeof(toSend), message);
                                     sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
                                            sizeof(serverAddress));
                                     *rec = false;
                                     *recievFr = false;
                                     start = time(nullptr);
                                 }
-
 
                             }
                         }
@@ -379,6 +378,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     string path;
                     cin >> path;
                     char file[path.size() + 1];
+                   // char *file = new char [path.size() + 1];
                     strcpy(file, path.c_str());
 
                     ifstream send_file;
@@ -389,9 +389,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     cout << "FILE SIZE " << file_size;
                     // citanie suboru
                     char file_data[file_size + 1];
+                    cout << "FILE SIZE " << file_size;
                     for(int i = 0 ; i < file_size; i++){
                         file_data[i] = send_file.get();
                     }
+                    cout << "FILE SIZE " << file_size;
                     send_file.close();
                     file_data[file_size] = '\0';
 
@@ -486,7 +488,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     uint16_t crc = CRC::Calculate(toSend, s + 1 ,CRC::CRC_16_ARC());
                                     Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(toSend) + sizeof(header)];
-                                    codeMessage(&header, toSend, s, message);
+                                    codeMessage(&header, toSend, sizeof(toSend), message);
                                     sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
                                            sizeof(serverAddress));
                                     *rec = false;
