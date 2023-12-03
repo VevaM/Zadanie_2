@@ -373,7 +373,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     }
                     //cout << message << endl << message.size();
                 }
-                // posielanie suboru
+                    // posielanie suboru
                 else if(choice == 2){
                     cout << "Zadaj cestu/nazov suboru" << endl;
                     string path;
@@ -552,7 +552,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 
 
                 }
-                // vymena roli
+                    // vymena roli
                 else if(choice == 3){
                     char text[] = "Chcel by som si vymenit rolu ";
                     Header header{0b10000000, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, 0};
@@ -566,7 +566,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     *changeRole = true;
                     cout << "rola " << role;
                 }
-                // ukoncenie spojenia
+                    // ukoncenie spojenia
                 else if(choice == 4){
 
                 }
@@ -632,14 +632,14 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 //*rec = false;
                 //*recievFr = false;
                 start = time(nullptr);
-               // role = "klient";
+                // role = "klient";
                 serverAdd = clientAdd;
                 cout << "rola " << role;
                 *changeRole = false;
                 changedRoles= true;
-               // this_thread::sleep_for(1000ms);
+                // this_thread::sleep_for(1000ms);
                 changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
-               // sendM(rec,connection,keepalive,recievFr,changeRole,correctData);
+                // sendM(rec,connection,keepalive,recievFr,changeRole,correctData);
 
             }
             //cout << "huhuhuhuhuhuh" << endl;
@@ -687,7 +687,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *rec = true;
                     cout << "Received from server: " << data << endl;
                 }
-                // ukoncenie spojenia
+                    // ukoncenie spojenia
                 else if(toBinary((int)header1.type) == "01000000" && *connection){
                     *keepalive = false;
                     *rec = true;
@@ -708,17 +708,17 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *rec = true;
                     cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
                 }
-                //*rec = true;
+                    //*rec = true;
                 else if(toBinary((int)header1.type) == "00000010" && *connection && *changeRole){
                     cout << "mozeme zo spravit";
-                   // role = "server";
+                    // role = "server";
                     *changeRole = false;
                     changedRoles = true;
                     clientAdd = serverAdd;
                     //*rec = true;
                     //niec
                     changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData);
-                  // receiveM(rec,connection,keepalive,recievFr,changeRole,correctData);
+                    // receiveM(rec,connection,keepalive,recievFr,changeRole,correctData);
                 }
                 cout << "Received from server: " << data << endl;
 
@@ -777,7 +777,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     }
                     if(file){
                         if(header1.fragmentInSequence > 0){
-                           // cout << header1.lenght << endl;
+                            // cout << header1.lenght << endl;
                             file_data.append(data, (header1.lenght - 9));
                             cout << "Prijaty fragment " << header1.fragmentInSequence << "/" <<header1.numberOfFragments << endl;
                             sizeOfFile += (header1.lenght - 9);
@@ -786,7 +786,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 
                         if(header1.fragmentInSequence == header1.numberOfFragments){
                             ofstream writeFile;
-                           // sizeOfFile += header1.lenght;
+                            // sizeOfFile += header1.lenght;
                             string path;
                             cout << "Zadaj kam chces ulozit subor" << endl;
                             cin >>  path;
@@ -825,7 +825,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *changeRole = true;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                     start = time(nullptr);
-                   // *recievFr =  true;
+                    // *recievFr =  true;
                 }
                 *rec = true;
                 start = time(nullptr);
@@ -890,7 +890,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         *rec = true;
 
 
-         //Nastavenie role
+        //Nastavenie role
         role = "klient";
         thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
         thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
@@ -930,7 +930,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         *changeRole = false;
         *correctData = false;
         *rec = false;
-         //Nastavenie role
+        //Nastavenie role
         role = "server";
         thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole, correctData);
         thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
