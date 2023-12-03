@@ -899,8 +899,8 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
 
         t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
         t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
-        t1.join();
-        t2.join();
+//        t1.join();
+//        t2.join();
 
 
 //        // Spustenie vlákna na odosielanie a prijímanie správ
@@ -944,7 +944,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
 
         t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
         t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
-        t1.join();
-        t2.join();
+//        t1.join();
+//        t2.join();
     }
 }
