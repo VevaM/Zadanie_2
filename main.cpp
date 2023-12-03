@@ -633,7 +633,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 //*recievFr = false;
                 start = time(nullptr);
                // role = "klient";
-                //serverAdd = clientAdd;
+                serverAdd = clientAdd;
                 cout << "rola " << role;
                 *changeRole = false;
                 changedRoles= true;
@@ -714,7 +714,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                    // role = "server";
                     *changeRole = false;
                     changedRoles = true;
-                    //clientAdd = serverAdd;
+                    clientAdd = serverAdd;
                     //*rec = true;
                     //niec
                     changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData);
