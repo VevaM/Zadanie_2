@@ -35,7 +35,7 @@ void codeMessage(Header * header, char text[], int text_size, char message[]);
 void decodeMessage(Header *header1, char text[], int text_size, char message[]);
 void receiveM(bool * rec, bool * connection, bool * keepalive, bool *recievFr, bool  *changeRole, bool *correctData);
 void sendM(bool * rec, bool *connection, bool *keepalive, bool *recievFr, bool  *changeRole,  bool *correctData);
-void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole);
+void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole , bool * correctData);
 string toBinary(int number);
 
 int main() {
@@ -383,7 +383,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     ifstream send_file;
                     send_file.open (file, ios::in | ios :: binary);
                     send_file.seekg(0, ios::end);
-                    int file_size = send_file.tellg();
+                    long long file_size = send_file.tellg();
                     send_file.seekg(0, ios::beg);
                     cout << "FILE SIZE " << file_size;
                     // citanie suboru
@@ -635,7 +635,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 cout << "rola " << role;
                 *changeRole = false;
                 //changedRoles= true;
-                changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole);
+                changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                 //sendM(rec,connection,keepalive,recievFr,changeRole);
             }
             //cout << "huhuhuhuhuhuh" << endl;
@@ -712,7 +712,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     changedRoles = true;
                     clientAdd = serverAdd;
                     *rec = false;
-                    changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole);
+                    changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData);
                    // receiveM(rec,connection,keepalive,recievFr,changeRole);
                 }
                // cout << "Received from server: " << data << endl;
@@ -851,7 +851,8 @@ string toBinary(int number){
 
 }
 
-void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole){
+void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole , bool *correctData){
+    *changeRole = false;
     if (newRole == "klient") {
         // Zatvorenie existujúceho spojenia (ak existuje)
         closesocket(clientS);
@@ -873,12 +874,13 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
             exit (1);
         }
 
-        // Nastavenie role
-//        role = "klient";
-//        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole);
-//        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole);
-//        t1.join();
-//        t2.join();
+
+         //Nastavenie role
+        role = "klient";
+        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
+        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
+        t1.join();
+        t2.join();
 //        // Spustenie vlákna na odosielanie a prijímanie správ
 //        thread t1(sendM,&rec);
 //        thread t2(receiveM, ...);
@@ -905,11 +907,11 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
             exit(1);
         }
 
-        // Nastavenie role
-//        role = "server";
-//        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole);
-//        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole);
-//        t1.join();
-//        t2.join();
+         //Nastavenie role
+        role = "server";
+        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole, correctData);
+        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
+        t1.join();
+        t2.join();
     }
 }
