@@ -261,6 +261,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     cout << "Teraz napis prosim ta spravu (moznost cez viacej riadkov, pre ukoncenie napis znak #) ";
                     cin.clear();
                     getline(cin,message,'#');
+                    int text_size = message.size();
 //                    message.append("\0");
                     cout << "Zadaj velkost fragmentu (max 1462B)" << endl;
                     cin >> fragmentSize;
@@ -271,7 +272,6 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         }
                     }
                     char text[message.size()+1];
-                    int text_size = sizeof(text);
                     for(int i = 0; i < message.size(); i++){
                         text[i] = message[i];
                     }
@@ -317,7 +317,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                 else s = text_size;
                                 text_size -= fragmentSize;
 
-                                uint16_t crc = CRC::Calculate(toSend, s,CRC::CRC_16_ARC());
+                                uint16_t crc = CRC::Calculate(toSend, s+1,CRC::CRC_16_ARC());
                                 cout <<  "crc " <<crc << " " << sizeof(toSend) << endl;
                                 Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                 char message[sizeof(toSend) + sizeof(header)];
@@ -438,7 +438,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 //                                else {
 //                                    cout << a;
                                     file_size -= fragmentSize;
-                                    uint16_t crc = CRC::Calculate(toSend, s,CRC::CRC_16_ARC());
+                                    uint16_t crc = CRC::Calculate(toSend, s+1,CRC::CRC_16_ARC());
                                     Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(toSend) + sizeof(header)];
                                     codeMessage(&header, toSend, s, message);
