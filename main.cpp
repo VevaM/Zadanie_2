@@ -635,6 +635,8 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 cout << "rola " << role;
                 *changeRole = false;
                 //changedRoles= true;
+                this_thread::sleep_for(1000ms);
+                *connection = false;
                 changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                 //sendM(rec,connection,keepalive,recievFr,changeRole);
             }
@@ -712,6 +714,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     changedRoles = true;
                     clientAdd = serverAdd;
                     *rec = false;
+                    *connection = false;
                     changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData);
                    // receiveM(rec,connection,keepalive,recievFr,changeRole);
                 }
