@@ -633,7 +633,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 role = "klient";
                 serverAdd = clientAdd;
                 cout << "rola " << role;
-                *changeRole = true;
+                //*changeRole = true;
                 changedRoles= true;
                // this_thread::sleep_for(1000ms);
                 changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
@@ -709,7 +709,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 else if(toBinary((int)header1.type) == "00000010" && *connection && *changeRole){
                     cout << "mozeme zo spravit";
                    // role = "server";
-                    *changeRole = true;
+                    //*changeRole = true;
                     changedRoles = true;
                     clientAdd = serverAdd;
                     //*connection = false;
