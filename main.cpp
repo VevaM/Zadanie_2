@@ -878,7 +878,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
             exit (1);
         }
 
-
+        *connection = false;
          //Nastavenie role
         role = "klient";
         thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
