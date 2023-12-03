@@ -712,7 +712,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *changeRole = false;
                     //changedRoles = false;
                     clientAdd = serverAdd;
-                    *connection = false;
+                    //*connection = false;
                     *rec = false;
                     changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData);
                    // receiveM(rec,connection,keepalive,recievFr,changeRole);
@@ -856,6 +856,7 @@ string toBinary(int number){
 
 void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole , bool *correctData){
     *changeRole = false;
+    *connection = false;
     if (newRole == "klient") {
         // Zatvorenie existujúceho spojenia (ak existuje)
         closesocket(clientS);
