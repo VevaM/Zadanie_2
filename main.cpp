@@ -856,6 +856,7 @@ string toBinary(int number){
 
 void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole , bool *correctData){
     *changeRole = false;
+    changedRoles = false;
     //*connection = false;
     if (newRole == "klient") {
         // Zatvorenie existujúceho spojenia (ak existuje)
