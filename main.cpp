@@ -571,6 +571,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 }
                 start = time(nullptr);
             }
+            cout << "port " << listening_port;
         }
 //        if (changedRoles) {
 //            sendM(rec,connection,keepalive,recievFr,changeRole);
@@ -860,7 +861,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
     changedRoles = false;
     if (newRole == "klient") {
         // Zatvorenie existujúceho spojenia (ak existuje)
-        closesocket(clientS);
+       // closesocket(clientS);
 
         // Vytvorenie nového soketu pre klienta
         clientS = socket(AF_INET, SOCK_DGRAM, 0);
@@ -879,7 +880,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
             exit (1);
         }
 
-        *connection = false;
+        //*connection = false;
         *keepalive = true;
         *recievFr = false;
         *changeRole = false;
@@ -900,7 +901,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
     }
     else{
         // Zatvorenie existujúceho spojenia (ak existuje)
-        closesocket(serverS);
+       // closesocket(serverS);
 
         // Vytvorenie nového soketu pre server
         serverS = socket(AF_INET, SOCK_DGRAM, 0);
