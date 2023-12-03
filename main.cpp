@@ -207,7 +207,7 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
 
     int d = 9;
     for(int i = 0 ; i < text_size ; i++){
-        message[i] = text[d];
+        text[i] = message[d];
         d++;
     }
 }
@@ -291,6 +291,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         toSend[fragmentSize] = '\0';
 
                         uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
+                        cout <<  "crc " <<crc;
                         Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, crc};
                         char message[sizeof(toSend) + sizeof(header)];
                         codeMessage(&header, toSend, sizeof(toSend), message);
@@ -311,6 +312,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                 toSend[fragmentSize] = '\0';
                                 a++;
                                 uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
+                                cout <<  "crc " <<crc;
                                 Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                 char message[sizeof(toSend) + sizeof(header)];
                                 codeMessage(&header, toSend, sizeof(toSend), message);
@@ -328,6 +330,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     else {
                         //char text[] = "Posielam celu textovu spravu";
                         uint16_t crc = CRC::Calculate(text, sizeof(text),CRC::CRC_16_ARC());
+                        cout <<  "crc " <<crc;
                         Header header{0b000000100, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, crc};
                         char message[sizeof(text) + sizeof(header)];
 
