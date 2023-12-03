@@ -221,7 +221,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
             if((time(nullptr)-start) >= 5 && *connection && i < 3){
                 i++;
                 char text[] = "Posielam keep alive";
-                Header header{0b001000000, sizeof(text) + 9, 1, 1, 0};
+                Header header{0b01000000, sizeof(text) + 9, 1, 1, 0};
                 char message[sizeof(text) + sizeof(header)];
 
                 codeMessage(&header, text, sizeof(text), message);
@@ -232,7 +232,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
             }
             if(*rec && !*connection) {
                 char text[] = "Chcem nadviazat spojenie";
-                Header header{0b000000001, sizeof(text) + 9, 1, 1, 0};
+                Header header{0b00000001, sizeof(text) + 9, 1, 1, 0};
                 char message[sizeof(text) + sizeof(header)];
 
                 codeMessage(&header, text, sizeof(text), message);
@@ -294,7 +294,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 
                         uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
                         cout <<  "crc " <<crc << " " << sizeof(toSend) << endl;
-                        Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, crc};
+                        Header header{0b00000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, crc};
                         char message[sizeof(toSend) + sizeof(header)];
                         codeMessage(&header, toSend, sizeof(toSend), message);
                         sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -330,7 +330,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     }
                                     sendLast[s] =  '\0';
                                     uint16_t crc = CRC::Calculate(sendLast, s + 1,CRC::CRC_16_ARC());
-                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(sendLast) + sizeof(header)];
                                     codeMessage(&header, sendLast, sizeof(sendLast), message);
                                     sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -341,7 +341,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                 }
                                 else {
                                     uint16_t crc = CRC::Calculate(toSend, s + 1,CRC::CRC_16_ARC());
-                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(toSend) + sizeof(header)];
                                     codeMessage(&header, toSend, sizeof(toSend), message);
                                     sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -361,7 +361,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         //char text[] = "Posielam celu textovu spravu";
                         uint16_t crc = CRC::Calculate(text, sizeof(text),CRC::CRC_16_ARC());
                         cout <<  "crc " <<crc << " " << sizeof(text) << endl;
-                        Header header{0b000000100, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, crc};
+                        Header header{0b00000100, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, crc};
                         char message[sizeof(text) + sizeof(header)];
 
                         codeMessage(&header, text, sizeof(text), message);
@@ -475,7 +475,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     }
                                     sendLast[s] =  '\0';
                                     uint16_t crc = CRC::Calculate(sendLast, s + 1 ,CRC::CRC_16_ARC());
-                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(sendLast) + sizeof(header)];
                                     codeMessage(&header, sendLast, sizeof(sendLast), message);
                                     sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -486,7 +486,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                 }
                                 else {
                                     uint16_t crc = CRC::Calculate(toSend, s + 1 ,CRC::CRC_16_ARC());
-                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(toSend) + sizeof(header)];
                                     codeMessage(&header, toSend, sizeof(toSend), message);
                                     sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -534,7 +534,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                             if(*recievFr){
                                 //char text[] = "Posielam cely subor";
                                 uint16_t crc = CRC::Calculate(file, sizeof(file),CRC::CRC_16_ARC());
-                                Header header{0b000000100, static_cast<unsigned short>(sizeof(file_data) + 9), 1, 1, crc};
+                                Header header{0b00000100, static_cast<unsigned short>(sizeof(file_data) + 9), 1, 1, crc};
                                 char message[sizeof(file_data) + sizeof(header)];
 
                                 codeMessage(&header, file_data, sizeof(file_data), message);
@@ -733,11 +733,10 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
                 }
                 else if(toBinary((int)header1.type) == "01000000" && *connection && !*changeRole && *endConn){
-                    *rec = true;
                     *keepalive = false;
-                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
+                    cout << "Received from server: " << data << endl;
                 }
-                    //*rec = true;
+                //*rec = true;
                 else if(toBinary((int)header1.type) == "00000010" && *connection && *changeRole){
                     cout << "mozeme zo spravit";
                     // role = "server";
@@ -754,6 +753,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
             }
         }
 
+
         if(!changedRoles){
             closesocket(serverS);
             closesocket(clientS);
@@ -765,6 +765,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
     else {
         //start = time(0);
         char file_name1[500];
+        char *name;
         string textMess,file_data;
         boolean file = false;
         int sizeOfFile = 0;
@@ -779,7 +780,6 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
             if (recievedByt > 0) {
                 char data[recievedByt - 9];
                 Header header1;
-                cout << "nieco aj psoelm";
 
                 decodeMessage(&header1,data, sizeof(data)-1,message);
                 uint16_t crc = CRC::Calculate(data, sizeof(data)-1,CRC::CRC_16_ARC());
@@ -787,7 +787,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 if(toBinary((int)header1.type) == "00000001"){
                     *connection = true;
                     start = time(nullptr);
-                    std::cout << "Received from klient: " << data << std::endl;
+                    cout << "Received from klient: " << data << std::endl;
                 }
                 else if(toBinary((int)header1.type) == "00000100"){
                     //*connection = true;
@@ -802,7 +802,13 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     if(header1.fragmentInSequence == 0){
                         file = true;
                         strcpy(file_name1,data);
-                        cout << "Received file name from klient: " << data << endl;
+                        string name_file = file_name1;
+                        int a = 0;
+                        a = name_file.std::string::find_last_of('\\');
+                        cout << a;
+                        if(a != -1) name_file = name_file.substr(a+1,sizeof(name_file));
+
+                        cout << "Received file name from klient: " << name_file << endl;
                     }
                     if(file){
                         if(header1.fragmentInSequence > 0){
