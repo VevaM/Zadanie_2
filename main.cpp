@@ -391,7 +391,8 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     send_file.seekg(0, ios::beg);
                     cout << "FILE SIZE " << file_size;
                     // citanie suboru
-                    char file_data[file_size + 1];
+//                    char file_data[file_size + 1];
+                    char * file_data = static_cast<char *>(malloc((file_size + 1) * sizeof(char)));
                     cout << "FILE SIZE " << file_size;
                     for(int i = 0 ; i < file_size; i++){
                         file_data[i] = send_file.get();
@@ -553,7 +554,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 
                     }
 
-
+                    free(file_data);
 
 
                 }
@@ -716,7 +717,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     // ukoncenie spojenia
                 else if(toBinary((int)header1.type) == "01000000" && *connection){
                     *keepalive = false;
-                    *rec = true;
+                   // *rec = true;
                     cout << "Received from server: " << data << endl;
                 }
                 else if(toBinary((int)header1.type) == "00000010" && *connection && !*changeRole){
@@ -835,6 +836,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                             textMess.clear();
                         }
                     }
+                    this_thread::sleep_for(100ms);
                     start = time(nullptr);
                     *recievFr =  true;
 
