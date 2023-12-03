@@ -627,16 +627,16 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 //*recievFr = false;
                 start = time(nullptr);
             }
-            else if(*rec && *recievFr && !*end){
-                char text[] = "Dostal som data";
-                Header header {0b00000010,sizeof(text) + 9,1,1,0};
-                char message[sizeof(text) + sizeof(header)];
-                codeMessage(&header,text,sizeof(text),message);
-                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
-                *rec = false;
-                //*recievFr = false;
-                start = time(nullptr);
-            }
+//            else if(*rec && *recievFr && !*end){
+//                char text[] = "Dostal som data";
+//                Header header {0b00000010,sizeof(text) + 9,1,1,0};
+//                char message[sizeof(text) + sizeof(header)];
+//                codeMessage(&header,text,sizeof(text),message);
+//                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+//                *rec = false;
+//                //*recievFr = false;
+//                start = time(nullptr);
+//            }
             else if(*rec && *end){
                 char text[] = "Potvrdzujem ukoncenie spojenia";
                 Header header {0b01000000,sizeof(text) + 9,1,1,0};
@@ -700,6 +700,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 
 void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , bool  *changeRole ,  bool *correctData , bool *end){
     if(role == "klient"){
+        int i = 1;
         while(*keepalive && !changedRoles){
             char buffer[1500];
             int size = sizeof(serverAdd);
@@ -723,17 +724,20 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 else if(toBinary((int)header1.type) == "00000010" && *connection && !*changeRole){
                     if(!*recievFr) *recievFr = true;
                     *rec = true;
-                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
+                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments<< endl;
+
                 }
                 else if(toBinary((int)header1.type) == "00010000" && *connection && !*changeRole){
                     if(!*recievFr) *recievFr = true;
                     *rec = true;
-                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
+                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << " " <<  i<< endl;
+                    i++;
                 }
                 else if(toBinary((int)header1.type) == "00001000" && *connection && !*changeRole){
                     if(!*recievFr) *recievFr = true;
                     *rec = true;
-                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
+                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << " "<< i<< endl;
+                    i++;
                 }
                     //*rec = true;
                 else if(toBinary((int)header1.type) == "00000010" && *connection && *changeRole){
