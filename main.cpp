@@ -376,7 +376,10 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 else if(choice == 2){
                     cout << "Zadaj cestu/nazov suboru" << endl;
                     string path;
-                    cin >> path;
+                    cin.clear();
+                    cin.sync();
+                    getline(cin,path);
+                    cout << path;
                     char file[path.size() + 1];
                    // char *file = new char [path.size() + 1];
                     strcpy(file, path.c_str());
@@ -893,10 +896,11 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
 
         //Nastavenie role
         role = "klient";
-        t1.join();
-        t2.join();
+
         t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
         t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
+        t1.join();
+        t2.join();
 
 
 //        // Spustenie vlákna na odosielanie a prijímanie správ
@@ -937,9 +941,10 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         role = "server";
 //        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole, correctData);
 //        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
-        t1.join();
-        t2.join();
+
         t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
         t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
+        t1.join();
+        t2.join();
     }
 }
