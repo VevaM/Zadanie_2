@@ -891,10 +891,12 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
 
         //Nastavenie role
         role = "klient";
-//        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
-//        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
         t1.join();
         t2.join();
+        t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
+        t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
+
+
 //        // Spustenie vlákna na odosielanie a prijímanie správ
 //        thread t1(sendM,&rec);
 //        thread t2(receiveM, ...);
@@ -935,5 +937,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
 //        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
         t1.join();
         t2.join();
+        t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
+        t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
     }
 }
