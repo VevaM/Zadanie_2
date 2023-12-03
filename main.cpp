@@ -634,7 +634,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 serverAdd = clientAdd;
                 cout << "rola " << role;
                 *changeRole = false;
-                //changedRoles= true;
+                changedRoles= true;
                // this_thread::sleep_for(1000ms);
                 changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                 //sendM(rec,connection,keepalive,recievFr,changeRole);
@@ -712,7 +712,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *changeRole = false;
                     changedRoles = true;
                     clientAdd = serverAdd;
-                    //*rec = false;
+                    *rec = true;
                     changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData);
                    // receiveM(rec,connection,keepalive,recievFr,changeRole);
                 }
@@ -820,7 +820,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *changeRole = true;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                     start = time(nullptr);
-                   // *recievFr =  true;
+                    *recievFr =  true;
                 }
                 *rec = true;
                 start = time(nullptr);
@@ -855,6 +855,7 @@ string toBinary(int number){
 
 void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole , bool *correctData){
     *changeRole = false;
+    changedRoles = false;
     if (newRole == "klient") {
         // Zatvorenie existujúceho spojenia (ak existuje)
         closesocket(clientS);
