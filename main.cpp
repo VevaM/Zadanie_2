@@ -661,7 +661,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 //*recievFr = false;
                 start = time(nullptr);
                 // role = "klient";
-                serverAdd = clientAdd;
+                //serverAdd = clientAdd;
                 cout << "rola " << role;
                 *changeRole = false;
                 changedRoles= true;
