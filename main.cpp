@@ -627,13 +627,13 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 char message[sizeof(text) + sizeof(header)];
                 codeMessage(&header,text,sizeof(text),message);
                 sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
-                //*rec = false;
+                *rec = false;
                 //*recievFr = false;
                 start = time(nullptr);
                 role = "klient";
                 serverAdd = clientAdd;
                 cout << "rola " << role;
-                //*changeRole = true;
+                *changeRole = true;
                 changedRoles= true;
                // this_thread::sleep_for(1000ms);
                 changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
