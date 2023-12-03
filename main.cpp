@@ -271,6 +271,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         }
                     }
                     char text[message.size()+1];
+                    int text_size = sizeof(text);
                     for(int i = 0; i < message.size(); i++){
                         text[i] = message[i];
                     }
@@ -311,9 +312,14 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                 }
                                 toSend[fragmentSize] = '\0';
                                 a++;
-                                uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
+                                int s;
+                                if( text_size > fragmentSize) s = fragmentSize;
+                                else s = text_size;
+                                text_size -= fragmentSize;
+
+                                uint16_t crc = CRC::Calculate(toSend, s,CRC::CRC_16_ARC());
                                 cout <<  "crc " <<crc << " " << sizeof(toSend) << endl;
-                                Header header{0b000000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                 char message[sizeof(toSend) + sizeof(header)];
                                 codeMessage(&header, toSend, sizeof(toSend), message);
                                 sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -432,7 +438,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 //                                else {
 //                                    cout << a;
                                     file_size -= fragmentSize;
-                                    uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
+                                    uint16_t crc = CRC::Calculate(toSend, s,CRC::CRC_16_ARC());
                                     Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(toSend) + sizeof(header)];
                                     codeMessage(&header, toSend, s, message);
@@ -651,8 +657,8 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 char data[recievedByt - 9];
                 Header header1;
 
-                decodeMessage(&header1,data, sizeof(data),message);
-                uint16_t crc = CRC::Calculate(data, sizeof(data),CRC::CRC_16_ARC());
+                decodeMessage(&header1,data, sizeof(data)-1,message);
+                uint16_t crc = CRC::Calculate(data, sizeof(data)-1,CRC::CRC_16_ARC());
                 cout << "crc " << crc << " " << header1.crc <<" s " << sizeof(data);
                 if(toBinary((int)header1.type) == "00000001"){
                     *connection = true;
