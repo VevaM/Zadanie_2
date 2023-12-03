@@ -78,6 +78,7 @@ int main() {
         cin >> add;
         cout << "Zadaj cislo portu " << endl;
         cin >> port;
+        listening_port = port;
 
         // Vytvorenie socketu
         clientS = socket(AF_INET,SOCK_DGRAM, 0);
