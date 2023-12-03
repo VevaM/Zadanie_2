@@ -207,7 +207,7 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
 
     int d = 9;
     for(int i = 0 ; i < text_size ; i++){
-        text[i] = message[d];
+        message[i] = text[d];
         d++;
     }
 }
@@ -643,13 +643,14 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
             string dat ;
 
             int recievedByt = recvfrom(serverS, message, sizeof(message), 0, reinterpret_cast<SOCKADDR *>(&clientAdd),&size);
-            uint16_t crc = CRC::Calculate(message, sizeof(message),CRC::CRC_16_ARC());
+
             if (recievedByt > 0) {
                 char data[recievedByt - 9];
                 Header header1;
 
                 decodeMessage(&header1,data, sizeof(data),message);
-
+                uint16_t crc = CRC::Calculate(data, sizeof(data),CRC::CRC_16_ARC());
+                cout << "crc " << crc << " " << header1.crc;
                 if(toBinary((int)header1.type) == "00000001"){
                     *connection = true;
                     start = time(nullptr);
