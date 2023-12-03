@@ -22,7 +22,7 @@ static sockaddr_in clientAdd, serverAdd;
 static SOCKET clientS, serverS;
 
 static time_t start;
-static thread t1,t2;
+//static thread t1,t2;
 
 struct Header {
     unsigned char type;
@@ -103,8 +103,8 @@ int main() {
         }
 
         bool rec = true, connection = false , keepalive = true, recievFr = false, changeRole = false ,correctData = false, end = false;
-        t1 = std::thread(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
-        t2 = std::thread(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
+        thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
+        thread t2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
         t1.join();
         t2.join();
 //        while (!endConnection) {
@@ -148,8 +148,8 @@ int main() {
             return 1;
         }
         bool rec = false, connection = false, keepalive = true, recievFr = false, changeRole = false, correctData = false, end = false;
-        t1 = std::thread(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
-        t2 = std::thread(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
+        thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
+        thread t2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
         t1.join();
         t2.join();
 //        while (!endConnection) {
@@ -571,6 +571,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     start = time(nullptr);
                     *changeRole = true;
                     cout << "rola " << role;
+                    *keepalive = false;
                 }
                     // ukoncenie spojenia
                 else if(choice == 4){
@@ -665,6 +666,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 *changeRole = false;
                 changedRoles= true;
                 // this_thread::sleep_for(1000ms);
+                *keepalive = false;
                 changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData,end);
                 // sendM(rec,connection,keepalive,recievFr,changeRole,correctData);
 
@@ -748,6 +750,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     clientAdd = serverAdd;
                     //*rec = true;
                     //niec
+                    *keepalive = false;
                     changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData,end);
                     // receiveM(rec,connection,keepalive,recievFr,changeRole,correctData);
                 }
@@ -855,6 +858,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 //                        *changeRole = true;
 //                    }
                     *changeRole = true;
+                    *keepalive = false;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                     start = time(nullptr);
                     // *recievFr =  true;
@@ -932,10 +936,10 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         //Nastavenie role
         role = "klient";
 
-        t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData, end);
-        t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData, end);
-//        t1.join();
-//        t2.join();
+        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole , correctData, end);
+        thread t2 (receiveM,rec, connection, keepalive, recievFr, changeRole, correctData, end);
+        t1.join();
+        t2.join();
 
 
 //        // Spustenie vlákna na odosielanie a prijímanie správ
@@ -977,9 +981,9 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
 //        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole, correctData);
 //        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
 
-        t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData, end);
-        t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData, end);
-//        t1.join();
-//        t2.join();
+        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole , correctData, end);
+        thread t2 (receiveM,rec, connection, keepalive, recievFr, changeRole, correctData, end);
+        t1.join();
+        t2.join();
     }
 }
