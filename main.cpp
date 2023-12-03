@@ -912,8 +912,9 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         // Nastavenie adresy a portu, na ktorom server bude naslúchať
         serverAddress.sin_family = AF_INET;
         serverAddress.sin_port = htons(listening_port);
-        string add = "192.168.1.16";
-        serverAddress.sin_addr.s_addr = inet_addr(add.c_str()) ;
+//        string add = "192.168.1.16";
+//        serverAddress.sin_addr.s_addr = inet_addr(add.c_str()) ;
+        serverAddress.sin_addr.s_addr = ADDR_ANY;
 
         // Pripojenie soketu k určenej adrese a porte
         if (bind(serverS, reinterpret_cast<SOCKADDR*>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
