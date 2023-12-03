@@ -34,9 +34,9 @@ struct Header {
 
 void codeMessage(Header * header, char text[], int text_size, char message[]);
 void decodeMessage(Header *header1, char text[], int text_size, char message[]);
-void receiveM(bool * rec, bool * connection, bool * keepalive, bool *recievFr, bool  *changeRole, bool *correctData);
-void sendM(bool * rec, bool *connection, bool *keepalive, bool *recievFr, bool  *changeRole,  bool *correctData);
-void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole , bool * correctData);
+void receiveM(bool * rec, bool * connection, bool * keepalive, bool *recievFr, bool  *changeRole, bool *correctData, bool * endConn );
+void sendM(bool * rec, bool *connection, bool *keepalive, bool *recievFr, bool  *changeRole,  bool *correctData, bool * endConn );
+void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole , bool * correctData, bool * endConn);
 string toBinary(int number);
 
 int main() {
@@ -102,9 +102,9 @@ int main() {
             return 1;
         }
 
-        bool rec = true, connection = false , keepalive = true, recievFr = false, changeRole = false ,correctData = false;
-        t1 = std::thread(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData);
-        t2 = std::thread(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData);
+        bool rec = true, connection = false , keepalive = true, recievFr = false, changeRole = false ,correctData = false, endConn  = false;
+        t1 = std::thread(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &endConn);
+        t2 = std::thread(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &endConn);
         t1.join();
         t2.join();
 //        while (!endConnection) {
@@ -147,9 +147,9 @@ int main() {
             WSACleanup();
             return 1;
         }
-        bool rec = false, connection = false, keepalive = true, recievFr = false, changeRole = false, correctData = false;
-        t1 = std::thread(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData);
-        t2 = std::thread(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData);
+        bool rec = false, connection = false, keepalive = true, recievFr = false, changeRole = false, correctData = false , endConn = false;
+        t1 = std::thread(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &endConn);
+        t2 = std::thread(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &endConn);
         t1.join();
         t2.join();
 //        while (!endConnection) {
@@ -213,7 +213,7 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
     }
 }
 
-void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool *changeRole , bool *correctData){
+void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool *changeRole , bool *correctData , bool * endConn ){
     if(role == "klient"){
         int i = 0;
         while(*keepalive && !changedRoles){
@@ -244,7 +244,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
             if(*rec && *connection){
                 int choice;
                 cout << "rola " << role;
-                cout << "Vyber co chces spravit :" << endl << "- poslat spravu(1)" <<endl << "- poslat subor(2)?" <<endl << "- inicializovat vymenu roli(3)" << endl << "ukoncenie spojenia(4) << endl";
+                cout << "Vyber co chces spravit :" << endl << "- poslat spravu(1)" <<endl << "- poslat subor(2)?" <<endl << "- inicializovat vymenu roli(3)" << endl << "- ukoncenie spojenia(4)" << endl;
                 cin >> choice;
                 if(choice != 1 && choice != 2 && choice != 3 && choice !=4){
                     while(choice != 1 && choice != 2 && choice != 3 && choice != 4){
@@ -571,6 +571,15 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     // ukoncenie spojenia
                 else if(choice == 4){
 
+                    char text[] = "Chcel by som ukoncit spojenie ";
+                    Header header{0b01000000, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, 0};
+                    char message[sizeof(text) + sizeof(header)];
+                    codeMessage(&header, text, sizeof(text), message);
+                    sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                           sizeof(serverAddress));
+                    *rec = false;
+                    start = time(nullptr);
+                    * endConn = true;
                 }
                 start = time(nullptr);
             }
@@ -640,9 +649,20 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 *changeRole = false;
                 changedRoles= true;
                 // this_thread::sleep_for(1000ms);
-                changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
+                changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData,endConn);
                 // sendM(rec,connection,keepalive,recievFr,changeRole,correctData);
 
+            }
+            else if(*rec && *recievFr && *endConn){
+                char text[] = "Potvrdzujem ukoncenie spojenia";
+                Header header {0b01000000,sizeof(text) + 9,1,1,0};
+                char message[sizeof(text) + sizeof(header)];
+                codeMessage(&header,text,sizeof(text),message);
+                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+                *rec = false;
+                //*recievFr = false;
+                start = time(nullptr);
+                *keepalive = false;
             }
             //cout << "huhuhuhuhuhuh" << endl;
 //            cout << start <<endl << time(0) <<endl << (time(0)-start)<<endl;
@@ -655,7 +675,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
         }
 
         if(!changedRoles){
-            cout << "end connecrion";
+            cout << "Ukončenie spojenia";
             char text[] = "Ukoncenie spojenia";
             Header header {0b01000000,sizeof(text) + 9,1,1,0};
             char message[sizeof(text) + sizeof(header)];
@@ -673,7 +693,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
     }
 }
 
-void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , bool  *changeRole ,  bool *correctData){
+void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , bool  *changeRole ,  bool *correctData, bool *endConn){
     if(role == "klient"){
         while(*keepalive && !changedRoles){
             char buffer[1500];
@@ -710,6 +730,11 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *rec = true;
                     cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
                 }
+                else if(toBinary((int)header1.type) == "01000000" && *connection && !*changeRole && *endConn){
+                    *rec = true;
+                    *keepalive = false;
+                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
+                }
                     //*rec = true;
                 else if(toBinary((int)header1.type) == "00000010" && *connection && *changeRole){
                     cout << "mozeme zo spravit";
@@ -719,7 +744,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     clientAdd = serverAdd;
                     //*rec = true;
                     //niec
-                    changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData);
+                    changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData,endConn);
                     // receiveM(rec,connection,keepalive,recievFr,changeRole,correctData);
                 }
                 cout << "Received from server: " << data << endl;
@@ -828,6 +853,11 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     start = time(nullptr);
                     // *recievFr =  true;
                 }
+                else if(toBinary((int)header1.type) == "01000000"){
+                    *endConn = true;
+                    start = time(nullptr);
+                    std::cout << "Received from klient: " << data << std::endl;
+                }
                 *rec = true;
                 start = time(nullptr);
             }
@@ -859,7 +889,7 @@ string toBinary(int number){
 
 }
 
-void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole , bool *correctData){
+void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole , bool *correctData , bool *endConn){
     *changeRole = false;
     changedRoles = false;
     if (newRole == "klient") {
@@ -895,8 +925,8 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         role = "klient";
         t1.join();
         t2.join();
-        t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
-        t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
+        t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData,endConn);
+        t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData,endConn);
 
 
 //        // Spustenie vlákna na odosielanie a prijímanie správ
@@ -939,7 +969,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
 //        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
         t1.join();
         t2.join();
-        t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
-        t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
+        t1 = std::thread(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData,endConn);
+        t2 = std::thread(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData,endConn);
     }
 }
