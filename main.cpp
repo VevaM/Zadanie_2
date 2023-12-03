@@ -747,6 +747,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
             if (recievedByt > 0) {
                 char data[recievedByt - 9];
                 Header header1;
+                cout << "nieco aj psoelm";
 
                 decodeMessage(&header1,data, sizeof(data)-1,message);
                 uint16_t crc = CRC::Calculate(data, sizeof(data)-1,CRC::CRC_16_ARC());
