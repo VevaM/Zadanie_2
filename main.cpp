@@ -104,8 +104,8 @@ int main() {
         bool rec = true, connection = false , keepalive = true, recievFr = false, changeRole = false ,correctData = false;
         thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData);
         thread t2(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData);
-        t1.join();
-        t2.join();
+        t1.detach();
+        t2.detach();
 //        while (!endConnection) {
 //            if(changedRoles) {
 //                changedRoles = false;
@@ -150,8 +150,8 @@ int main() {
         thread t1(sendM, &rec, &connection, &keepalive, &recievFr, &changeRole , &correctData);
         thread t2(receiveM, &rec, &connection, &keepalive, &recievFr, &changeRole , &correctData);
 
-        t1.join();
-        t2.join();
+        t1.detach();
+        t2.detach();
 //        while (!endConnection) {
 //            cout << "hladam sa";
 //            if(changedRoles) {
@@ -888,12 +888,13 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         *correctData = false;
         *rec = true;
 
+
          //Nastavenie role
         role = "klient";
         thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
-       // thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
-        t1.join();
-        //t2.join();
+        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
+        t1.detach();
+        t2.detach();
 //        // Spustenie vlákna na odosielanie a prijímanie správ
 //        thread t1(sendM,&rec);
 //        thread t2(receiveM, ...);
@@ -929,9 +930,9 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         *rec = false;
          //Nastavenie role
         role = "server";
-       // thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole, correctData);
+        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole, correctData);
         thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
-        //t1.join();
-        t2.join();
+        t1.detach();
+        t2.detach();
     }
 }
