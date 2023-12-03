@@ -33,8 +33,8 @@ struct Header {
 
 void codeMessage(Header * header, char text[], int text_size, char message[]);
 void decodeMessage(Header *header1, char text[], int text_size, char message[]);
-void receiveM(bool * rec, bool * connection, bool * keepalive, bool *recievFr, bool  *changeRole);
-void sendM(bool * rec, bool *connection, bool *keepalive, bool *recievFr, bool  *changeRole);
+void receiveM(bool * rec, bool * connection, bool * keepalive, bool *recievFr, bool  *changeRole, bool *correctData);
+void sendM(bool * rec, bool *connection, bool *keepalive, bool *recievFr, bool  *changeRole,  bool *correctData);
 void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole);
 string toBinary(int number);
 
@@ -100,9 +100,9 @@ int main() {
             return 1;
         }
 
-        bool rec = true, connection = false , keepalive = true, recievFr = false, changeRole = false;
-        thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole);
-        thread t2(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole);
+        bool rec = true, connection = false , keepalive = true, recievFr = false, changeRole = false ,correctData = false;
+        thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData);
+        thread t2(receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData);
         t1.join();
         t2.join();
 //        while (!endConnection) {
@@ -145,9 +145,9 @@ int main() {
             WSACleanup();
             return 1;
         }
-        bool rec = false, connection = false, keepalive = true, recievFr = false, changeRole = false;
-        thread t1(sendM, &rec, &connection, &keepalive, &recievFr, &changeRole);
-        thread t2(receiveM, &rec, &connection, &keepalive, &recievFr, &changeRole);
+        bool rec = false, connection = false, keepalive = true, recievFr = false, changeRole = false, correctData = false;
+        thread t1(sendM, &rec, &connection, &keepalive, &recievFr, &changeRole , &correctData);
+        thread t2(receiveM, &rec, &connection, &keepalive, &recievFr, &changeRole , &correctData);
 
         t1.join();
         t2.join();
@@ -212,7 +212,7 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
     }
 }
 
-void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool *changeRole){
+void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool *changeRole , bool *correctData){
     if(role == "klient"){
         int i = 0;
         while(*keepalive && !changedRoles){
@@ -313,20 +313,44 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                 toSend[fragmentSize] = '\0';
                                 a++;
                                 int s;
+
                                 if( text_size > fragmentSize) s = fragmentSize;
                                 else s = text_size;
                                 text_size -= fragmentSize;
+                                cout << "text size " << text_size << "fragme " << fragmentSize;
 
-                                uint16_t crc = CRC::Calculate(toSend, s+1,CRC::CRC_16_ARC());
-                                cout <<  "crc " <<crc << " " << sizeof(toSend) << endl;
-                                Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
-                                char message[sizeof(toSend) + sizeof(header)];
-                                codeMessage(&header, toSend, sizeof(toSend), message);
-                                sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
-                                       sizeof(serverAddress));
-                                *rec = false;
-                                *recievFr = false;
-                                start = time(nullptr);
+
+
+                                cout <<  "crc " <<crc << " " << sizeof(toSend) << " s " <<s << endl;
+                                if(s < fragmentSize){
+                                    char sendLast[s+1];
+                                    for (int i = 0 ; i < s ; i++){
+                                        sendLast[i] = toSend[i];
+                                    }
+                                    sendLast[s] =  '\0';
+                                    uint16_t crc = CRC::Calculate(sendLast, s + 1,CRC::CRC_16_ARC());
+                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    char message[sizeof(sendLast) + sizeof(header)];
+                                    codeMessage(&header, sendLast, sizeof(sendLast), message);
+                                    sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                                           sizeof(serverAddress));
+                                    *rec = false;
+                                    *recievFr = false;
+                                    start = time(nullptr);
+                                }
+                                else {
+                                    uint16_t crc = CRC::Calculate(toSend, s + 1,CRC::CRC_16_ARC());
+                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    char message[sizeof(toSend) + sizeof(header)];
+                                    codeMessage(&header, toSend, s, message);
+                                    sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                                           sizeof(serverAddress));
+                                    *rec = false;
+                                    *recievFr = false;
+                                    start = time(nullptr);
+                                }
+
+
                             }
                         }
 
@@ -422,8 +446,10 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                 a++;
 
                                 int s;
+
                                 if(file_size > fragmentSize) s = fragmentSize;
                                 else s = file_size;
+                                file_size -= fragmentSize;
 //                                if(rest != 0 && (a == (number-1))){
 //                                    cout <<"prvq";
 //                                    Header header{0b000000100, static_cast<unsigned short>(rest + 10), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , 0};
@@ -437,8 +463,26 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 //                                }
 //                                else {
 //                                    cout << a;
-                                    file_size -= fragmentSize;
-                                    uint16_t crc = CRC::Calculate(toSend, s+1,CRC::CRC_16_ARC());
+
+
+                                if(s < fragmentSize){
+                                    char sendLast[s+1];
+                                    for (int i = 0 ; i < s ; i++){
+                                        sendLast[i] = toSend[i];
+                                    }
+                                    sendLast[s] =  '\0';
+                                    uint16_t crc = CRC::Calculate(sendLast, s + 1 ,CRC::CRC_16_ARC());
+                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    char message[sizeof(sendLast) + sizeof(header)];
+                                    codeMessage(&header, sendLast, sizeof(sendLast), message);
+                                    sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                                           sizeof(serverAddress));
+                                    *rec = false;
+                                    *recievFr = false;
+                                    start = time(nullptr);
+                                }
+                                else {
+                                    uint16_t crc = CRC::Calculate(toSend, s + 1 ,CRC::CRC_16_ARC());
                                     Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(toSend) + sizeof(header)];
                                     codeMessage(&header, toSend, s, message);
@@ -447,6 +491,17 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     *rec = false;
                                     *recievFr = false;
                                     start = time(nullptr);
+                                }
+
+//                                    uint16_t crc = CRC::Calculate(toSend, s,CRC::CRC_16_ARC());
+//                                    Header header{0b000000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+//                                    char message[sizeof(toSend) + sizeof(header)];
+//                                    codeMessage(&header, toSend, sizeof(toSend), message);
+//                                    sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+//                                           sizeof(serverAddress));
+//                                    *rec = false;
+//                                    *recievFr = false;
+//                                    start = time(nullptr);
 //                                }
 
 //                                sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
@@ -533,6 +588,26 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 *rec = false;
                 start = time(nullptr);
             }
+            else if(*rec && *recievFr && *correctData){
+                char text[] = "Spravny fragment";
+                Header header {0b00010000,sizeof(text) + 9,1,1,0};
+                char message[sizeof(text) + sizeof(header)];
+                codeMessage(&header,text,sizeof(text),message);
+                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+                *rec = false;
+                //*recievFr = false;
+                start = time(nullptr);
+            }
+            else if(*rec && *recievFr && !*correctData){
+                char text[] = "Nespravny fragment";
+                Header header {0b00001000,sizeof(text) + 9,1,1,0};
+                char message[sizeof(text) + sizeof(header)];
+                codeMessage(&header,text,sizeof(text),message);
+                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+                *rec = false;
+                //*recievFr = false;
+                start = time(nullptr);
+            }
             else if(*rec && *recievFr){
                 char text[] = "Dostal som data";
                 Header header {0b00000010,sizeof(text) + 9,1,1,0};
@@ -590,7 +665,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
     }
 }
 
-void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , bool  *changeRole){
+void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , bool  *changeRole ,  bool *correctData){
     if(role == "klient"){
         while(*keepalive && !changedRoles){
             char buffer[1500];
@@ -606,14 +681,16 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *rec = true;
                     cout << "Received from server: " << data << endl;
                 }
+                // ukoncenie spojenia
                 else if(toBinary((int)header1.type) == "01000000" && *connection){
                     *keepalive = false;
                     *rec = true;
-                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
+                    cout << "Received from server: " << data << endl;
                 }
                 else if(toBinary((int)header1.type) == "00000010" && *connection && !*changeRole){
                     if(!*recievFr) *recievFr = true;
                     *rec = true;
+                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
                 }
                 //*rec = true;
                 else if(toBinary((int)header1.type) == "00000010" && *connection && *changeRole){
@@ -626,7 +703,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole);
                    // receiveM(rec,connection,keepalive,recievFr,changeRole);
                 }
-                cout << "Received from server: " << data << endl;
+               // cout << "Received from server: " << data << endl;
 
             }
         }
@@ -668,8 +745,12 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 else if(toBinary((int)header1.type) == "00000100"){
                     //*connection = true;
                     if(crc == header1.crc) {
+                        *correctData = true;
                         cout << "spravny fragment";
-                    }else cout <<  "nespravny fragment";
+                    }else{
+                        *correctData = false;
+                        cout <<  "nespravny fragment";
+                    }
                     if(header1.fragmentInSequence == 0){
                         file = true;
                         strcpy(file_name1,data);
@@ -780,11 +861,11 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         }
 
         // Nastavenie role
-        role = "klient";
-        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole);
-        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole);
-        t1.join();
-        t2.join();
+//        role = "klient";
+//        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole);
+//        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole);
+//        t1.join();
+//        t2.join();
 //        // Spustenie vlákna na odosielanie a prijímanie správ
 //        thread t1(sendM,&rec);
 //        thread t2(receiveM, ...);
@@ -812,10 +893,10 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         }
 
         // Nastavenie role
-        role = "server";
-        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole);
-        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole);
-        t1.join();
-        t2.join();
+//        role = "server";
+//        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole);
+//        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole);
+//        t1.join();
+//        t2.join();
     }
 }
