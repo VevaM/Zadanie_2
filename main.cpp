@@ -592,7 +592,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
     }
     else {
         while(*keepalive && !changedRoles){
-            if(*rec && *connection && !*recievFr && !*changeRole){
+            if(*rec && *connection && !*recievFr && !*changeRole && !*endConn){
                 char text[] = "Nadviazane spojenie";
                 Header header {0b00000010,sizeof(text) + 9,1,1,0};
                 char message[sizeof(text) + sizeof(header)];
@@ -602,7 +602,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 start = time(nullptr);
             }
 
-            else if(*rec && *recievFr && *correctData){
+            else if(*rec && *recievFr && *correctData && !*endConn){
                 char text[] = "Spravny fragment";
                 Header header {0b00010000,sizeof(text) + 9,1,1,0};
                 char message[sizeof(text) + sizeof(header)];
@@ -612,7 +612,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 //*recievFr = false;
                 start = time(nullptr);
             }
-            else if(*rec && *recievFr && !*correctData){
+            else if(*rec && *recievFr && !*correctData && !*endConn){
                 char text[] = "Nespravny fragment";
                 Header header {0b00001000,sizeof(text) + 9,1,1,0};
                 char message[sizeof(text) + sizeof(header)];
@@ -622,7 +622,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 //*recievFr = false;
                 start = time(nullptr);
             }
-            else if(*rec && *recievFr){
+            else if(*rec && *recievFr && !*endConn){
                 char text[] = "Dostal som data";
                 Header header {0b00000010,sizeof(text) + 9,1,1,0};
                 char message[sizeof(text) + sizeof(header)];
@@ -633,7 +633,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 start = time(nullptr);
             }
 
-            else if(*connection && *rec && *changeRole){
+            else if(*connection && *rec && *changeRole && !*endConn){
                 cout <<"ack";
                 char text[] = "ACK na vymenu roli";
                 Header header {0b00000010,sizeof(text) + 9,1,1,0};
@@ -653,7 +653,9 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 // sendM(rec,connection,keepalive,recievFr,changeRole,correctData);
 
             }
-            else if(*rec && *recievFr && *endConn){
+            else if(*rec && *endConn){
+                cout << "poslem to";
+
                 char text[] = "Potvrdzujem ukoncenie spojenia";
                 Header header {0b01000000,sizeof(text) + 9,1,1,0};
                 char message[sizeof(text) + sizeof(header)];
@@ -675,7 +677,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
         }
 
         if(!changedRoles){
-            cout << "Ukončenie spojenia";
+            cout << "Ukoncenie spojenia";
             char text[] = "Ukoncenie spojenia";
             Header header {0b01000000,sizeof(text) + 9,1,1,0};
             char message[sizeof(text) + sizeof(header)];
@@ -710,22 +712,22 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     cout << "Received from server: " << data << endl;
                 }
                     // ukoncenie spojenia
-                else if(toBinary((int)header1.type) == "01000000" && *connection){
+                else if(toBinary((int)header1.type) == "01000000" && *connection && !*endConn){
                     *keepalive = false;
                     *rec = true;
                     cout << "Received from server: " << data << endl;
                 }
-                else if(toBinary((int)header1.type) == "00000010" && *connection && !*changeRole){
+                else if(toBinary((int)header1.type) == "00000010" && *connection && !*changeRole && !*endConn){
                     if(!*recievFr) *recievFr = true;
                     *rec = true;
                     cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
                 }
-                else if(toBinary((int)header1.type) == "00010000" && *connection && !*changeRole){
+                else if(toBinary((int)header1.type) == "00010000" && *connection && !*changeRole && !*endConn){
                     if(!*recievFr) *recievFr = true;
                     *rec = true;
                     cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
                 }
-                else if(toBinary((int)header1.type) == "00001000" && *connection && !*changeRole){
+                else if(toBinary((int)header1.type) == "00001000" && *connection && !*changeRole && !*endConn){
                     if(!*recievFr) *recievFr = true;
                     *rec = true;
                     cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
@@ -856,7 +858,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 else if(toBinary((int)header1.type) == "01000000"){
                     *endConn = true;
                     start = time(nullptr);
-                    std::cout << "Received from klient: " << data << std::endl;
+                    cout << "Received from klient: " << data << std::endl;
                 }
                 *rec = true;
                 start = time(nullptr);
