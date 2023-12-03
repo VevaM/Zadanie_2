@@ -891,9 +891,9 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
          //Nastavenie role
         role = "klient";
         thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
-        thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
+       // thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
         t1.join();
-        t2.join();
+        //t2.join();
 //        // Spustenie vlákna na odosielanie a prijímanie správ
 //        thread t1(sendM,&rec);
 //        thread t2(receiveM, ...);
@@ -929,9 +929,9 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         *rec = false;
          //Nastavenie role
         role = "server";
-        thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole, correctData);
+       // thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole, correctData);
         thread t2(receiveM, rec, connection, keepalive, recievFr, changeRole, correctData);
-        t1.join();
+        //t1.join();
         t2.join();
     }
 }
