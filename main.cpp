@@ -879,6 +879,12 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         }
 
         *connection = false;
+        *keepalive = false;
+        *recievFr = false;
+        *changeRole = false;
+        *correctData = false;
+        *rec = true;
+
          //Nastavenie role
         role = "klient";
         thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole,correctData);
@@ -911,6 +917,12 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
             exit(1);
         }
 
+        *connection = false;
+        *keepalive = false;
+        *recievFr = false;
+        *changeRole = false;
+        *correctData = false;
+        *rec = false;
          //Nastavenie role
         role = "server";
         thread t1(sendM, rec ,connection, keepalive, recievFr, changeRole, correctData);
