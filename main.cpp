@@ -719,7 +719,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 }
                     // ukoncenie spojenia
                 else if(toBinary((int)header1.type) == "01000000" && *connection){
-                    *keepalive = false;
+                   // *keepalive = false;
                    // *rec = true;
                     cout << "Received from server: " << data << endl;
                 }
@@ -858,7 +858,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 //                        *changeRole = true;
 //                    }
                     *changeRole = true;
-                    *keepalive = false;
+                   // *keepalive = false;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                     start = time(nullptr);
                     // *recievFr =  true;
@@ -914,8 +914,9 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         // Nastavenie adresy a portu servera, ku ktorému sa chce pripojiť
         serverAddress.sin_family = AF_INET;
         serverAddress.sin_port = htons(listening_port);
-        string add = "192.168.1.15";
+        string add = "192.168.1.16";
         serverAddress.sin_addr.s_addr = inet_addr(add.c_str());
+        //serverAddress.sin_addr.s_addr = INADDR_ANY;
 
         // Pripojenie k serveru
         if (connect(clientS, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
