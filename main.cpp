@@ -588,16 +588,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 *rec = false;
                 start = time(nullptr);
             }
-            else if(*rec && *recievFr){
-                char text[] = "Dostal som data";
-                Header header {0b00000010,sizeof(text) + 9,1,1,0};
-                char message[sizeof(text) + sizeof(header)];
-                codeMessage(&header,text,sizeof(text),message);
-                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
-                *rec = false;
-                //*recievFr = false;
-                start = time(nullptr);
-            }
+
             else if(*rec && *recievFr && *correctData){
                 char text[] = "Spravny fragment";
                 Header header {0b00010000,sizeof(text) + 9,1,1,0};
@@ -611,6 +602,16 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
             else if(*rec && *recievFr && !*correctData){
                 char text[] = "Nespravny fragment";
                 Header header {0b00001000,sizeof(text) + 9,1,1,0};
+                char message[sizeof(text) + sizeof(header)];
+                codeMessage(&header,text,sizeof(text),message);
+                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+                *rec = false;
+                //*recievFr = false;
+                start = time(nullptr);
+            }
+            else if(*rec && *recievFr){
+                char text[] = "Dostal som data";
+                Header header {0b00000010,sizeof(text) + 9,1,1,0};
                 char message[sizeof(text) + sizeof(header)];
                 codeMessage(&header,text,sizeof(text),message);
                 sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
@@ -755,6 +756,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 }
                 else if(toBinary((int)header1.type) == "00000100"){
                     //*connection = true;
+                    crc += 1;
                     if(crc == header1.crc) {
                         *correctData = true;
                         cout << "spravny fragment";
