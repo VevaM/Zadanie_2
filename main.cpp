@@ -762,7 +762,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 }
                 else if(toBinary((int)header1.type) == "00000100"){
                     //*connection = true;
-                    crc += 1;
+                    //crc += 1;
                     if(crc == header1.crc) {
                         *correctData = true;
                         cout << "spravny fragment";
@@ -782,7 +782,6 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                             cout << "Prijaty fragment " << header1.fragmentInSequence << "/" <<header1.numberOfFragments << endl;
                             sizeOfFile += (header1.lenght - 9);
                         }
-
 
                         if(header1.fragmentInSequence == header1.numberOfFragments){
                             ofstream writeFile;
