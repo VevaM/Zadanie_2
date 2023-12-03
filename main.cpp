@@ -572,7 +572,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 }
                 start = time(nullptr);
             }
-            cout << "port " << listening_port;
+          //  cout << "port " << listening_port;
         }
 //        if (changedRoles) {
 //            sendM(rec,connection,keepalive,recievFr,changeRole);
@@ -914,7 +914,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         serverAddress.sin_port = htons(listening_port);
 //        string add = "192.168.1.16";
 //        serverAddress.sin_addr.s_addr = inet_addr(add.c_str()) ;
-        serverAddress.sin_addr.s_addr = ADDR_ANY;
+        serverAddress.sin_addr.s_addr = INADDR_ANY;
 
         // Pripojenie soketu k určenej adrese a porte
         if (bind(serverS, reinterpret_cast<SOCKADDR*>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
