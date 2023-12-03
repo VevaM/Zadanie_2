@@ -569,18 +569,19 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     cout << "rola " << role;
                 }
                     // ukoncenie spojenia
-                else if(choice == 4){
-
-                    char text[] = "Chcel by som ukoncit spojenie ";
-                    Header header{0b01000000, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, 0};
-                    char message[sizeof(text) + sizeof(header)];
-                    codeMessage(&header, text, sizeof(text), message);
-                    sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
-                           sizeof(serverAddress));
-                    *rec = false;
-                    start = time(nullptr);
-                    * endConn = true;
-                }
+//                else if(choice == 4){
+//
+//                    cout << "v choice";
+//                    char text[] = "Chcel by som ukoncit spojenie ";
+//                    Header header{0b01000000, static_cast<unsigned short>(sizeof(text) + 9), 1, 1, 0};
+//                    char message[sizeof(text) + sizeof(header)];
+//                    codeMessage(&header, text, sizeof(text), message);
+//                    sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+//                           sizeof(serverAddress));
+//                    *rec = false;
+//                    start = time(nullptr);
+//                    * endConn = true;
+//                }
                 start = time(nullptr);
             }
           //  cout << "port " << listening_port;
@@ -653,19 +654,19 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 // sendM(rec,connection,keepalive,recievFr,changeRole,correctData);
 
             }
-            else if(*rec && *endConn){
-                cout << "poslem to";
-
-                char text[] = "Potvrdzujem ukoncenie spojenia";
-                Header header {0b01000000,sizeof(text) + 9,1,1,0};
-                char message[sizeof(text) + sizeof(header)];
-                codeMessage(&header,text,sizeof(text),message);
-                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
-                *rec = false;
-                //*recievFr = false;
-                start = time(nullptr);
-                *keepalive = false;
-            }
+//            else if(*rec && *endConn){
+//                cout << "poslem to";
+//
+//                char text[] = "Potvrdzujem ukoncenie spojenia";
+//                Header header {0b01000000,sizeof(text) + 9,1,1,0};
+//                char message[sizeof(text) + sizeof(header)];
+//                codeMessage(&header,text,sizeof(text),message);
+//                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+//                *rec = false;
+//                //*recievFr = false;
+//                start = time(nullptr);
+//                *keepalive = false;
+//            }
             //cout << "huhuhuhuhuhuh" << endl;
 //            cout << start <<endl << time(0) <<endl << (time(0)-start)<<endl;
 //            time(0);
@@ -732,10 +733,10 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *rec = true;
                     cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
                 }
-                else if(toBinary((int)header1.type) == "01000000" && *connection && !*changeRole && *endConn){
-                    *keepalive = false;
-                    cout << "Received from server: " << data << endl;
-                }
+//                else if(toBinary((int)header1.type) == "01000000" && *connection && !*changeRole && *endConn){
+//                    *keepalive = false;
+//                    cout << "Received from server: " << data << endl;
+//                }
                 //*rec = true;
                 else if(toBinary((int)header1.type) == "00000010" && *connection && *changeRole){
                     cout << "mozeme zo spravit";
