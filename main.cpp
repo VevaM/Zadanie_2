@@ -713,7 +713,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     //changedRoles = false;
                     clientAdd = serverAdd;
                     //*connection = false;
-                    *rec = false;
+                    *rec = true;
                     changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData);
                    // receiveM(rec,connection,keepalive,recievFr,changeRole);
                 }
@@ -821,7 +821,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *changeRole = true;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                     start = time(nullptr);
-                   // *recievFr =  true;
+                    *recievFr =  true;
                 }
                 *rec = true;
                 start = time(nullptr);
