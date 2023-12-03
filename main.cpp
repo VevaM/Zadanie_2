@@ -879,7 +879,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         }
 
         *connection = false;
-        *keepalive = false;
+        *keepalive = true;
         *recievFr = false;
         *changeRole = false;
         *correctData = false;
@@ -918,7 +918,7 @@ void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive 
         }
 
         *connection = false;
-        *keepalive = false;
+        *keepalive = true;
         *recievFr = false;
         *changeRole = false;
         *correctData = false;
