@@ -122,16 +122,43 @@ int main() {
 //                sockaddr_in clientAddr;
 //                int clientAddrSize = sizeof(clientAddr);
 //                serverS = accept(serverS, reinterpret_cast<sockaddr*>(&clientAddr), &clientAddrSize);
-                changedRoles = false;
-                rec = false;
-                recievFr = false;
-                connection = true;
-                serverS = clientS;
-                serverAdd = clientAdd;
-                thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
-                thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
-                n1.join();
-                n2.join();
+
+
+//                changedRoles = false;
+//                rec = false;
+//                recievFr = false;
+//                connection = true;
+//                serverS = clientS;
+//                serverAdd = clientAdd;
+//                thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
+//                thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
+//                n1.join();
+//                n2.join();
+
+                closesocket(clientS);
+                serverS = socket(AF_INET, SOCK_DGRAM, 0);
+                if (serverS == INVALID_SOCKET) {
+                    std::cerr << "Nepodaril sa vytvorit socket." << std::endl;
+                    WSACleanup();
+                    return 1;
+                }
+
+                serverAdd.sin_family = AF_INET;
+                serverAdd.sin_port = htons(listening_port);
+                serverAdd.sin_addr.s_addr = INADDR_ANY;
+
+                if (bind(serverS, reinterpret_cast<SOCKADDR*>(&serverAdd), sizeof(serverAdd)) == SOCKET_ERROR) {
+                    std::cerr << "Nepodaril sa nastavit socket!" << std::endl;
+                    closesocket(serverS);
+                    WSACleanup();
+                    return 1;
+                }
+
+                bool rec = false, connection = false, keepalive = true, recievFr = false, changeRole = false, correctData = false, end = false;
+                thread t1(sendM, &rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
+                thread t2(receiveM, &rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
+                t1.join();
+                t2.join();
             }
         }
 //        while (!endConnection) {
@@ -191,17 +218,45 @@ int main() {
 //
 //                connect(clientS, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr));
 //                cout << "sdf12345" << endl;
-                changedRoles = false;
-                rec = true;
-                recievFr = false;
-                connection = true;
-                clientS = serverS;
-                clientAdd = serverAdd;
-               // this_thread::sleep_for(1000ms);
-                thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
-                thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
-                n1.join();
-                n2.join();
+
+//                changedRoles = false;
+//                rec = true;
+//                recievFr = false;
+//                connection = true;
+//                clientS = serverS;
+//                clientAdd = serverAdd;
+//               // this_thread::sleep_for(1000ms);
+//                thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
+//                thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
+//                n1.join();
+//                n2.join();
+
+                closesocket(serverS);
+
+                clientS = socket(AF_INET, SOCK_DGRAM, 0);
+                if (clientS == INVALID_SOCKET) {
+                    std::cerr << "Nepodaril sa vytvorit socket." << std::endl;
+                    WSACleanup();
+                    return 1;
+                }
+
+                clientAdd.sin_family = AF_INET;
+                clientAdd.sin_port = htons(listening_port);
+                string add = "192.168.1.16";
+                clientAdd.sin_addr.s_addr = inet_addr(add.c_str());
+
+                if (connect(clientS, reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd)) == SOCKET_ERROR) {
+                    std::cerr << "Neporadilo sa pripojit na server" << std::endl;
+                    closesocket(clientS);
+                    WSACleanup();
+                    return 1;
+                }
+
+                bool rec = true, connection = false, keepalive = true, recievFr = false, changeRole = false, correctData = false, end = false;
+                thread t1(sendM, &rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
+                thread t2(receiveM, &rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
+                t1.join();
+                t2.join();
             }
         }
 //        while (!endConnection) {
