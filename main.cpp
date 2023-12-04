@@ -177,6 +177,7 @@ int main() {
     while(!endConnection){
         cout << "sdf" << endl;
         if(changedRoles){
+            cout << "sdf12345" << endl;
             bool rec = false, connection = false, keepalive = true, recievFr = false, changeRole = false, correctData = false, end = false;
             thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
             thread t2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
