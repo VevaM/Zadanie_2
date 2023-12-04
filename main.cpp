@@ -107,9 +107,9 @@ int main() {
         t2.join();
         cout << "tuK" << endl;
         while(!endConnection){
-            cout << "sdf" << endl;
+//            cout << "sdf" << endl;
             if(changedRoles){
-                cout << "sdf12345" << endl;
+//                cout << "sdf12345" << endl;
                 changedRoles = false;
                 rec = false;
                 recievFr = false;
@@ -167,9 +167,9 @@ int main() {
         t2.join();
         cout << "tu" << endl;
         while(!endConnection) {
-            cout << "sdf" << endl;
+//            cout << "sdf" << endl;
             if(changedRoles){
-                cout << "sdf12345" << endl;
+//                cout << "sdf12345" << endl;
                 changedRoles = true;
                 rec = true;
                 recievFr = false;
@@ -259,7 +259,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
         int i = 0;
         int * recievedFragm ;
         while(*keepalive && !changedRoles){
-            cout << "sendM" << endl;
+//            cout << "sendM" << endl;
 
 
             if((time(nullptr)-start) >= 5 && *connection && i < 3){
@@ -841,7 +841,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 //            *connection = true;
 //        }
         while(*keepalive && !changedRoles){
-            cout << "sendMSERVER" <<endl;
+//            cout << "sendMSERVER" <<endl;
             if(*rec && *connection && !*recievFr && !*changeRole && !*end){
                 char text[] = "Nadviazane spojenie";
                 Header header {0b00000010,sizeof(text) + 9,1,1,0};
@@ -954,10 +954,10 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
     if(role == "klient"){
         int i = 1;
         while(*keepalive && !changedRoles){
-            cout << "recieveM" <<endl;
             char buffer[1500];
             int size = sizeof(serverAdd);
 
+            cout << "recieveMklient" <<endl;
             int bytesReceived = recvfrom(clientS, buffer, sizeof(buffer), 0, reinterpret_cast<SOCKADDR *>(&serverAdd),&size);
             if (bytesReceived > 0) {
                 char data[bytesReceived - 9];
@@ -1034,11 +1034,11 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
         boolean file = false;
         int sizeOfFile = 0;
         while(*keepalive && !changedRoles){
-            cout << "recieveMSERVER" <<endl;
             char message[1500];
             int size = sizeof(clientAdd);
             string dat ;
 
+            cout << "recieveMSERVER" <<endl;
             int recievedByt = recvfrom(serverS, message, sizeof(message), 0, reinterpret_cast<SOCKADDR *>(&clientAdd),&size);
 
             if (recievedByt > 0) {
