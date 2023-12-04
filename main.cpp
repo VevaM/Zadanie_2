@@ -114,6 +114,7 @@ int main() {
             cout << "sdf" << endl;
             if(changedRoles){
                 cout << "sdf12345" << endl;
+                changeRole = false;
                 thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread t2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
                 t1.join();
@@ -169,6 +170,7 @@ int main() {
             cout << "sdf" << endl;
             if(changedRoles){
                 cout << "sdf12345" << endl;
+                changeRole = false;
                 thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread t2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
                 t1.join();
