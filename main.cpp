@@ -327,6 +327,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     else s = text_size;
                                     text_size -= fragmentSize;
                                     cout << "text size " << text_size << "fragme " << fragmentSize;
+                                    cout << toSend << endl;
 
                                     cout <<  "crc " <<crc << " " << sizeof(toSend) << " s " <<s << endl;
 
@@ -339,6 +340,10 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     toSend[fragmentSize] = '\0';
                                     if( text_size > fragmentSize) s = fragmentSize;
                                     else s = text_size;
+                                   // a++;
+
+                                    cout << toSend << endl;
+
 
                                 }
                                 if(s < fragmentSize){
@@ -635,7 +640,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 if(numbOfFragm == recievedFragServer.back()+1){
                     numbOfFragm = 0;
                     recievedFragServer.clear();
-                } 
+                }
             }
             else if(*rec && *recievFr && !*correctData && !*end){
                 char text[] = "Nespravny fragment";
@@ -864,10 +869,13 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                         }
                     }
                     else {
-                        numbOfFragm = header1.numberOfFragments;
-                        textMess.append(data);
+                        if(*correctData){
+                            numbOfFragm = header1.numberOfFragments;
+                            textMess.append(data);
+
+                        }
                         recievedFragServer.push_back(header1.fragmentInSequence);
-                        cout << "Prijaty fragment " << header1.fragmentInSequence << "/" <<header1.numberOfFragments << endl;
+                        cout << "Prijaty fragment " << header1.fragmentInSequence << "/" <<header1.numberOfFragments << " " << data <<  endl;
 
                         if(header1.fragmentInSequence == header1.numberOfFragments){
                             cout << "Received MESSAGE from klient: " << textMess << endl;
