@@ -44,9 +44,6 @@ string toBinary(int number);
 
 int main() {
 
-
-
-
     bool correctRole = false;
     cout << "Zadaj ci chces figurovat ako server alebo klient" << endl;
     cin >> role;
@@ -66,8 +63,6 @@ int main() {
             cin >> role;
         }
     }
-
-
 
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
@@ -833,6 +828,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
     }
     else {
         if (!*connection && changedRoles) {
+            this_thread::sleep_for(1000ms);
             char text[] = "Nadviazane spojenie";
             Header header {0b00000010,sizeof(text) + 9,1,1,0};
             char message[sizeof(text) + sizeof(header)];
