@@ -907,13 +907,15 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 codeMessage(&header,text,sizeof(text),message);
                 sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
                 //*rec = false;
+                sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+                //*rec = false;
                 //*recievFr = false;
                 start = time(nullptr);
                 role = "klient";
                 serverAdd = clientAdd;
                 cout << "rola " << role;
                 *changeRole = false;
-                this_thread::sleep_for(10ms);
+                this_thread::sleep_for(100ms);
                 changedRoles= true;
 
                // changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData,end);
@@ -922,7 +924,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 //                 *keepalive = false;
 
             }
-            cout << "huhuhuhuhuhuh" << endl;
+         //   cout << "huhuhuhuhuhuh" << endl;
 //            cout << start <<endl << time(0) <<endl << (time(0)-start)<<endl;
 //            time(0);
             this_thread::sleep_for(10ms);
@@ -1126,10 +1128,11 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 //                    }
                     *changeRole = true;
                     changedRoles = false;
-//                    this_thread::sleep_for(1000ms);
+//                    
 //                    *keepalive = false;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                     start = time(nullptr);
+                    this_thread::sleep_for(1000ms);
                     // *recievFr =  true;
                 }
                 else if(toBinary((int)header1.type) == "01000000"){
