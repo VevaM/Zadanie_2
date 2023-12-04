@@ -296,27 +296,27 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         }
                         toSend[fragmentSize] = '\0';
 
-                        uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
-                        crc +=1;
-                        cout <<  "crc " <<crc << " " << sizeof(toSend) << endl;
-                        cout << "POCET" <<number <<endl;
-                        Header header{0b00000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, crc};
-                        char message[sizeof(toSend) + sizeof(header)];
-                        codeMessage(&header, toSend, sizeof(toSend), message);
-                        sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
-                               sizeof(serverAddress));
-                        *rec = false;
-                        *recievFr = false;
-                        start = time(nullptr);
-                        a++;
+//                        uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
+//                        crc +=1;
+//                        cout <<  "crc " <<crc << " " << sizeof(toSend) << endl;
+//                        cout << "POCET" <<number <<endl;
+//                        Header header{0b00000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, crc};
+//                        char message[sizeof(toSend) + sizeof(header)];
+//                        codeMessage(&header, toSend, sizeof(toSend), message);
+//                        sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+//                               sizeof(serverAddress));
+//                        *rec = false;
+//                        *recievFr = false;
+//                        start = time(nullptr);
+                      //  a++;
 
                         while(a < number){
+                            char toSend[fragmentSize + 1];
 
-                            if(*recievFr){
+                            if(*recievFr || a == 0){
                                 int s;
                                 this_thread::sleep_for(10ms);
                                 if(*correctData){
-                                    char toSend[fragmentSize + 1];
                                     for(int i = (a*fragmentSize); i < ((a+1)*fragmentSize) ; i++){
                                         toSend[i - a*fragmentSize] = text[i];
                                     }
@@ -326,26 +326,30 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     if( text_size > fragmentSize) s = fragmentSize;
                                     else s = text_size;
                                     text_size -= fragmentSize;
-                                    cout << "text size " << text_size << "fragme " << fragmentSize;
-                                    cout << toSend << endl;
-
-                                    cout <<  "crc " <<crc << " " << sizeof(toSend) << " s " <<s << endl;
+//                                    cout << "text size " << text_size << "fragme " << fragmentSize;
+//                                    cout << toSend << endl;
+//
+//                                    cout <<  "crc " <<crc << " " << sizeof(toSend) << " s " <<s << endl;
 
                                 }
                                 else {
-                                    char toSend[fragmentSize + 1];
-                                    for(int i = (resend * fragmentSize); i < ((resend + 1) * fragmentSize) ; i++){
-                                        toSend[i - resend*fragmentSize] = text[i];
+//                                    char toSend[fragmentSize + 1];
+                                    a--;
+                                    //cout << "resend" << resend << endl;
+
+                                    for(int i = ((resend -1) * fragmentSize); i < ((resend) * fragmentSize) ; i++){
+                                        toSend[i - ((resend-1)*fragmentSize)] = text[i];
                                     }
                                     toSend[fragmentSize] = '\0';
                                     if( text_size > fragmentSize) s = fragmentSize;
                                     else s = text_size;
-                                   // a++;
 
-                                    cout << toSend << endl;
-
-
+                                    a++;
+                                    //cout << "prep" << toSend << endl;
                                 }
+
+                               // cout << toSend << endl;
+
                                 if(s < fragmentSize){
                                     char sendLast[s+1];
                                     for (int i = 0 ; i < s ; i++){
