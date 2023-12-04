@@ -298,6 +298,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 
                         uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
                         cout <<  "crc " <<crc << " " << sizeof(toSend) << endl;
+                        cout << "POCET" <<number <<endl;
                         Header header{0b00000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, crc};
                         char message[sizeof(toSend) + sizeof(header)];
                         codeMessage(&header, toSend, sizeof(toSend), message);
@@ -311,6 +312,8 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         while(a < number){
 
                             if(*recievFr){
+                                int s;
+                                this_thread::sleep_for(10ms);
                                 if(*correctData){
                                     char toSend[fragmentSize + 1];
                                     for(int i = (a*fragmentSize); i < ((a+1)*fragmentSize) ; i++){
@@ -318,43 +321,14 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     }
                                     toSend[fragmentSize] = '\0';
                                     a++;
-                                    int s;
 
                                     if( text_size > fragmentSize) s = fragmentSize;
                                     else s = text_size;
                                     text_size -= fragmentSize;
                                     cout << "text size " << text_size << "fragme " << fragmentSize;
 
-
-
                                     cout <<  "crc " <<crc << " " << sizeof(toSend) << " s " <<s << endl;
-                                    if(s < fragmentSize){
-                                        char sendLast[s+1];
-                                        for (int i = 0 ; i < s ; i++){
-                                            sendLast[i] = toSend[i];
-                                        }
-                                        sendLast[s] =  '\0';
-                                        uint16_t crc = CRC::Calculate(sendLast, s + 1,CRC::CRC_16_ARC());
-                                        Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
-                                        char message[sizeof(sendLast) + sizeof(header)];
-                                        codeMessage(&header, sendLast, sizeof(sendLast), message);
-                                        sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
-                                               sizeof(serverAddress));
-                                        *rec = false;
-                                        *recievFr = false;
-                                        start = time(nullptr);
-                                    }
-                                    else {
-                                        uint16_t crc = CRC::Calculate(toSend, s + 1,CRC::CRC_16_ARC());
-                                        Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
-                                        char message[sizeof(toSend) + sizeof(header)];
-                                        codeMessage(&header, toSend, sizeof(toSend), message);
-                                        sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
-                                               sizeof(serverAddress));
-                                        *rec = false;
-                                        *recievFr = false;
-                                        start = time(nullptr);
-                                    }
+
                                 }
                                 else {
                                     char toSend[fragmentSize + 1];
@@ -362,38 +336,36 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                         toSend[i - resend*fragmentSize] = text[i];
                                     }
                                     toSend[fragmentSize] = '\0';
-                                    int s;
                                     if( text_size > fragmentSize) s = fragmentSize;
                                     else s = text_size;
 
-                                    cout <<  "crc " <<crc << " " << sizeof(toSend) << " s " <<s << endl;
-                                    if(s < fragmentSize){
-                                        char sendLast[s+1];
-                                        for (int i = 0 ; i < s ; i++){
-                                            sendLast[i] = toSend[i];
-                                        }
-                                        sendLast[s] =  '\0';
-                                        uint16_t crc = CRC::Calculate(sendLast, s + 1,CRC::CRC_16_ARC());
-                                        Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
-                                        char message[sizeof(sendLast) + sizeof(header)];
-                                        codeMessage(&header, sendLast, sizeof(sendLast), message);
-                                        sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
-                                               sizeof(serverAddress));
-                                        *rec = false;
-                                        *recievFr = false;
-                                        start = time(nullptr);
+                                }
+                                if(s < fragmentSize){
+                                    char sendLast[s+1];
+                                    for (int i = 0 ; i < s ; i++){
+                                        sendLast[i] = toSend[i];
                                     }
-                                    else {
-                                        uint16_t crc = CRC::Calculate(toSend, s + 1,CRC::CRC_16_ARC());
-                                        Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
-                                        char message[sizeof(toSend) + sizeof(header)];
-                                        codeMessage(&header, toSend, sizeof(toSend), message);
-                                        sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
-                                               sizeof(serverAddress));
-                                        *rec = false;
-                                        *recievFr = false;
-                                        start = time(nullptr);
-                                    }
+                                    sendLast[s] =  '\0';
+                                    uint16_t crc = CRC::Calculate(sendLast, s + 1,CRC::CRC_16_ARC());
+                                    Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    char message[sizeof(sendLast) + sizeof(header)];
+                                    codeMessage(&header, sendLast, sizeof(sendLast), message);
+                                    sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                                           sizeof(serverAddress));
+                                    *rec = false;
+                                    *recievFr = false;
+                                    start = time(nullptr);
+                                }
+                                else {
+                                    uint16_t crc = CRC::Calculate(toSend, s + 1,CRC::CRC_16_ARC());
+                                    Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
+                                    char message[sizeof(toSend) + sizeof(header)];
+                                    codeMessage(&header, toSend, sizeof(toSend), message);
+                                    sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
+                                           sizeof(serverAddress));
+                                    *rec = false;
+                                    *recievFr = false;
+                                    start = time(nullptr);
                                 }
                             }
                         }
@@ -659,7 +631,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 *rec = false;
                 //*recievFr = false;
                 start = time(nullptr);
-                if(numbOfFragm == recievedFragServer.back()) recievedFragServer.clear();
+                if(numbOfFragm == recievedFragServer.back()+1) recievedFragServer.clear();
             }
             else if(*rec && *recievFr && !*correctData && !*end){
                 char text[] = "Nespravny fragment";
