@@ -113,7 +113,7 @@ int main() {
                 changedRoles = false;
                 rec = true;
                 recievFr = false;
-                connection = false;
+                connection = true;
                 thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
                 n1.join();
@@ -173,7 +173,7 @@ int main() {
                 changedRoles = true;
                 rec = false;
                 recievFr = true;
-                connection = false;
+                connection = true;
                 thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
                 n1.join();
@@ -827,7 +827,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 //        }
     }
     else {
-        if (!*connection && changedRoles) {
+        if (*connection && changedRoles) {
             this_thread::sleep_for(1000ms);
             char text[] = "Nadviazane spojenie";
             Header header {0b00000010,sizeof(text) + 9,1,1,0};
