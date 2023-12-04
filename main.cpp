@@ -110,7 +110,7 @@ int main() {
 //            cout << "sdf" << endl;
             if(changedRoles){
 //                cout << "sdf12345" << endl;
-                serverS = socket(AF_INET, SOCK_STREAM, 0);
+                serverS = socket(AF_INET, SOCK_DGRAM, 0);
                 sockaddr_in serverAddr;
                 serverAddr.sin_family = AF_INET;
                 serverAddr.sin_port = htons(12345);
@@ -183,11 +183,11 @@ int main() {
         while(!endConnection) {
 //            cout << "sdf" << endl;
             if(changedRoles){
-                clientS = socket(AF_INET, SOCK_STREAM, 0);
+                clientS = socket(AF_INET, SOCK_DGRAM, 0);
                 sockaddr_in serverAddr;
                 serverAddr.sin_family = AF_INET;
                 serverAddr.sin_port = htons(12345);
-                serverAddr.sin_addr.s_addr = inet_addr("192.168.1.16");
+                serverAddr.sin_addr.s_addr = inet_addr("192.168.1.13");
 
                 connect(clientS, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr));
 //                cout << "sdf12345" << endl;
