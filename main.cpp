@@ -172,7 +172,7 @@ int main() {
                 cout << "sdf12345" << endl;
                 changedRoles = true;
                 rec = true;
-                recievFr = true;
+                recievFr = false;
                 connection = true;
                 thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
