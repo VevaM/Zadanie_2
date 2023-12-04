@@ -111,7 +111,7 @@ int main() {
             if(changedRoles){
 //                cout << "sdf12345" << endl;
                 changedRoles = false;
-                rec = false;
+                rec = true;
                 recievFr = false;
                 connection = true;
                 thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
@@ -171,7 +171,7 @@ int main() {
             if(changedRoles){
 //                cout << "sdf12345" << endl;
                 changedRoles = false;
-                rec = true;
+                rec = false;
                 recievFr = false;
                 connection = true;
                // this_thread::sleep_for(1000ms);
@@ -828,18 +828,18 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 //        }
     }
     else {
-//        if (*connection && changedRoles) {
-//            this_thread::sleep_for(1000ms);
-//            char text[] = "Nadviazane spojenie";
-//            Header header {0b00000010,sizeof(text) + 9,1,1,0};
-//            char message[sizeof(text) + sizeof(header)];
-//            codeMessage(&header,text,sizeof(text),message);
-//            sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
-//            *rec = false;
-//            start = time(nullptr);
-//            changedRoles = false;
-//            *connection = true;
-//        }
+        if (*connection && changedRoles) {
+            this_thread::sleep_for(1000ms);
+            char text[] = "Dokoncime tu vymenu";
+            Header header {0b00000010,sizeof(text) + 9,1,1,0};
+            char message[sizeof(text) + sizeof(header)];
+            codeMessage(&header,text,sizeof(text),message);
+            sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+            *rec = true;
+            start = time(nullptr);
+            changedRoles = false;
+            *connection = true;
+        }
         while(*keepalive && !changedRoles){
 //            cout << "sendMSERVER" <<endl;
             if(*rec && *connection && !*recievFr && !*changeRole && !*end){
