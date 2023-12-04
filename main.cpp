@@ -170,7 +170,7 @@ int main() {
 //            cout << "sdf" << endl;
             if(changedRoles){
 //                cout << "sdf12345" << endl;
-                changedRoles = true;
+                changedRoles = false;
                 rec = true;
                 recievFr = false;
                 connection = true;
@@ -1008,7 +1008,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *changeRole = false;
                     changedRoles = true;
                     clientAdd = serverAdd;
-                    //*rec = true;
+                    *rec = true;
                     //niec
                     //changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData,end);
                     // receiveM(rec,connection,keepalive,recievFr,changeRole,correctData);
