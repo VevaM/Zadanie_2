@@ -114,6 +114,8 @@ int main() {
                 rec = false;
                 recievFr = false;
                 connection = true;
+                serverS = clientS;
+                serverAdd = clientAdd;
                 thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
                 n1.join();
@@ -174,6 +176,8 @@ int main() {
                 rec = true;
                 recievFr = false;
                 connection = true;
+                clientS = serverS;
+                clientAdd = serverAdd;
                // this_thread::sleep_for(1000ms);
                 thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
@@ -287,7 +291,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
             }
             if(*rec && *connection){
                 int choice;
-                this_thread::sleep_for(20ms);
+                this_thread::sleep_for(2000ms);
                 cout << "Vyber co chces spravit :" << endl << "- poslat spravu(1)" <<endl << "- poslat subor(2)?" <<endl << "- inicializovat vymenu roli(3)" << endl << "ukoncenie spojenia(4) << endl";
                 cin >> choice;
                 if(choice != 1 && choice != 2 && choice != 3 && choice !=4){
@@ -828,18 +832,18 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 //        }
     }
     else {
-        if (*connection && changedRoles) {
-            this_thread::sleep_for(1000ms);
-            char text[] = "Dokoncime tu vymenu";
-            Header header {0b00000010,sizeof(text) + 9,1,1,0};
-            char message[sizeof(text) + sizeof(header)];
-            codeMessage(&header,text,sizeof(text),message);
-            sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
-            *rec = true;
-            start = time(nullptr);
-            changedRoles = false;
-            *connection = true;
-        }
+//        if (*connection && changedRoles) {
+//            this_thread::sleep_for(1000ms);
+//            char text[] = "Dokoncime tu vymenu";
+//            Header header {0b00000010,sizeof(text) + 9,1,1,0};
+//            char message[sizeof(text) + sizeof(header)];
+//            codeMessage(&header,text,sizeof(text),message);
+//            sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+//            *rec = true;
+//            start = time(nullptr);
+//            changedRoles = false;
+//            *connection = true;
+//        }
         while(*keepalive && !changedRoles){
 //            cout << "sendMSERVER" <<endl;
             if(*rec && *connection && !*recievFr && !*changeRole && !*end){
