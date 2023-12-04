@@ -310,6 +310,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         start = time(nullptr);
                         a++;
 
+                        bool sendC = false;
                         while(a != number){
                             char toSend[fragmentSize + 1];
 
@@ -361,7 +362,12 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     sendLast[s] =  '\0';
                                     cout << "last";
                                     uint16_t crc = CRC::Calculate(sendLast, s + 1,CRC::CRC_16_ARC());
-                                    crc += 1;
+                                    if(!sendC){
+                                        cout <<"!send";
+                                        crc += 1;
+                                        sendC = true;
+                                    }
+
                                     Header header{0b00000100, static_cast<unsigned short>(s + 9), static_cast<unsigned short>(number),static_cast<unsigned short>(a) , crc};
                                     char message[sizeof(sendLast) + sizeof(header)];
                                     codeMessage(&header, sendLast, sizeof(sendLast), message);
@@ -902,7 +908,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                         recievedFragServer.push_back(header1.fragmentInSequence);
                         cout << "Prijaty fragment " << header1.fragmentInSequence << "/" <<header1.numberOfFragments << " " << data <<  endl;
 
-                        if(header1.fragmentInSequence == header1.numberOfFragments){
+                        if(header1.fragmentInSequence == header1.numberOfFragments && *correctData){
                             cout << "Received MESSAGE from klient: " << textMess << endl;
                             textMess.clear();
                         }
