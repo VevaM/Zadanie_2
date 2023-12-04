@@ -110,15 +110,16 @@ int main() {
         thread t2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
         t1.join();
         t2.join();
+        cout << "tuK" << endl;
         while(!endConnection){
             cout << "sdf" << endl;
             if(changedRoles){
                 cout << "sdf12345" << endl;
-                changeRole = false;
-                thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
-                thread t2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
-                t1.join();
-                t2.join();
+                changedRoles = false;
+                thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
+                thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
+                n1.join();
+                n2.join();
             }
         }
 //        while (!endConnection) {
@@ -166,15 +167,16 @@ int main() {
         thread t2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
         t1.join();
         t2.join();
-        while(!endConnection){
+        cout << "tu" << endl;
+        while(!endConnection) {
             cout << "sdf" << endl;
             if(changedRoles){
                 cout << "sdf12345" << endl;
-                changeRole = false;
-                thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
-                thread t2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
-                t1.join();
-                t2.join();
+                changedRoles = false;
+                thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
+                thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
+                n1.join();
+                n2.join();
             }
         }
 //        while (!endConnection) {
@@ -255,6 +257,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
         int i = 0;
         int * recievedFragm ;
         while(*keepalive && !changedRoles){
+            cout << "sendM" << endl;
 
 
             if((time(nullptr)-start) >= 5 && *connection && i < 3){
@@ -788,7 +791,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     *rec = false;
                     start = time(nullptr);
                     *changeRole = true;
-                    changedRoles = true;
+                    changedRoles = false;
                     cout << "rola " << role;
 //                    this_thread::sleep_for(1000ms);
 //                    *keepalive = false;
@@ -818,6 +821,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
     }
     else {
         while(*keepalive && !changedRoles){
+            cout << "sendMSERVER" <<endl;
             if(*rec && *connection && !*recievFr && !*changeRole && !*end){
                 char text[] = "Nadviazane spojenie";
                 Header header {0b00000010,sizeof(text) + 9,1,1,0};
@@ -923,7 +927,6 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
             return;
         }
 
-
     }
 }
 
@@ -931,6 +934,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
     if(role == "klient"){
         int i = 1;
         while(*keepalive && !changedRoles){
+            cout << "recieveM" <<endl;
             char buffer[1500];
             int size = sizeof(serverAdd);
 
@@ -1009,7 +1013,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
         boolean file = false;
         int sizeOfFile = 0;
         while(*keepalive && !changedRoles){
-
+            cout << "recieveMSERVER" <<endl;
             char message[1500];
             int size = sizeof(clientAdd);
             string dat ;
@@ -1100,7 +1104,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 //                        *changeRole = true;
 //                    }
                     *changeRole = true;
-                    changedRoles = true;
+                    changedRoles = false;
 //                    this_thread::sleep_for(1000ms);
 //                    *keepalive = false;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
