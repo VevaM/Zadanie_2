@@ -118,6 +118,7 @@ int main() {
                 changedRoles = false;
                 rec = true;
                 recievFr = false;
+                connection = false;
                 thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
                 n1.join();
@@ -177,6 +178,7 @@ int main() {
                 changedRoles = false;
                 rec = false;
                 recievFr = true;
+                connection = false;
                 thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
                 n1.join();
@@ -991,7 +993,8 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     //*rec = true;
                 else if(toBinary((int)header1.type) == "00000010" && *connection && *changeRole){
                     cout << "mozeme zo spravit";
-                    role = "server";
+                    role.clear();
+                    role.append("server");
                     *changeRole = false;
                     changedRoles = true;
                     clientAdd = serverAdd;
