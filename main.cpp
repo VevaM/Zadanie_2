@@ -116,6 +116,9 @@ int main() {
             if(changedRoles){
                 cout << "sdf12345" << endl;
                 changedRoles = false;
+                if(role == "server"){
+
+                }
                 thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
                 n1.join();
@@ -902,7 +905,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 //                 *keepalive = false;
 
             }
-            //cout << "huhuhuhuhuhuh" << endl;
+            cout << "huhuhuhuhuhuh" << endl;
 //            cout << start <<endl << time(0) <<endl << (time(0)-start)<<endl;
 //            time(0);
             this_thread::sleep_for(10ms);
