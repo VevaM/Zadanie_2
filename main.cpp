@@ -350,6 +350,8 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         sendto(clientS, message, sizeof(message), 0, reinterpret_cast<sockaddr *>(&serverAddress),
                                sizeof(serverAddress));
                         *rec = false;
+                        cout << "POCET" <<number <<endl;
+                        cout << WSAGetLastError << endl;
                         *recievFr = false;
                         start = time(nullptr);
                         a++;
@@ -797,7 +799,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     *rec = false;
                     start = time(nullptr);
                     *changeRole = true;
-                    changedRoles = false;
+                    changedRoles = true;
                     cout << "rola " << role;
 //                    this_thread::sleep_for(1000ms);
 //                    *keepalive = false;
@@ -1132,7 +1134,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 //                        *changeRole = true;
 //                    }
                     *changeRole = true;
-                    changedRoles = false;
+                    changedRoles = true;
                     *rec = true;
 //                    *keepalive = false;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
