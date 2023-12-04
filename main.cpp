@@ -755,7 +755,8 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     start = time(nullptr);
                     *changeRole = true;
                     cout << "rola " << role;
-                   // *keepalive = false;
+                    this_thread::sleep_for(1000ms);
+                    *keepalive = false;
                 }
                     // ukoncenie spojenia
                 else if(choice == 4){
@@ -854,10 +855,11 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 cout << "rola " << role;
                 *changeRole = false;
                 changedRoles= true;
-                // this_thread::sleep_for(1000ms);
-               // *keepalive = false;
+
                 changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData,end);
                 // sendM(rec,connection,keepalive,recievFr,changeRole,correctData);
+                 this_thread::sleep_for(1000ms);
+                 *keepalive = false;
 
             }
             //cout << "huhuhuhuhuhuh" << endl;
@@ -945,10 +947,10 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     clientAdd = serverAdd;
                     //*rec = true;
                     //niec
-                    this_thread::sleep_for(1000ms);
-                    *keepalive = false;
                     changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData,end);
                     // receiveM(rec,connection,keepalive,recievFr,changeRole,correctData);
+                    this_thread::sleep_for(1000ms);
+                    *keepalive = false;
                 }
 
                 cout << "Received from server: " << data << endl;
