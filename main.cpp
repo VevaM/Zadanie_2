@@ -175,7 +175,7 @@ int main() {
             cout << "sdf" << endl;
             if(changedRoles){
                 cout << "sdf12345" << endl;
-                changedRoles = false;
+                changedRoles = true;
                 rec = false;
                 recievFr = true;
                 connection = false;
@@ -832,6 +832,17 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 //        }
     }
     else {
+        if (!*connection && changedRoles) {
+            char text[] = "Nadviazane spojenie";
+            Header header {0b00000010,sizeof(text) + 9,1,1,0};
+            char message[sizeof(text) + sizeof(header)];
+            codeMessage(&header,text,sizeof(text),message);
+            sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
+            *rec = false;
+            start = time(nullptr);
+            changedRoles = false;
+            *connection = true;
+        }
         while(*keepalive && !changedRoles){
             cout << "sendMSERVER" <<endl;
             if(*rec && *connection && !*recievFr && !*changeRole && !*end){
