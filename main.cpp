@@ -908,14 +908,14 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
                 //*rec = false;
                // sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
-                *rec = false;
+                *rec = true;
                 //*recievFr = false;
                 start = time(nullptr);
                 role = "klient";
                 serverAdd = clientAdd;
                 cout << "rola " << role;
                 *changeRole = false;
-                this_thread::sleep_for(100ms);
+               // this_thread::sleep_for(100ms);
                 changedRoles= true;
 
                // changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData,end);
