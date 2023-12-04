@@ -44,9 +44,6 @@ string toBinary(int number);
 
 int main() {
 
-
-
-
     bool correctRole = false;
     cout << "Zadaj ci chces figurovat ako server alebo klient" << endl;
     cin >> role;
@@ -178,34 +175,34 @@ int main() {
         cout << "sdf" << endl;
         if(changedRoles){
             if(role == "klient"){
-                string add;
-                int port;
-                cout << "Zadaj adresu servera" << endl;
-                cin >> add;
-                cout << "Zadaj cislo portu " << endl;
-                cin >> port;
-                listening_port = port;
-
-                // Vytvorenie socketu
-                clientS = socket(AF_INET,SOCK_DGRAM, 0);
-                serverS = clientS;
-                if (clientS == INVALID_SOCKET) {
-                    std::cerr << "Nepodaril sa vytvorit socket." << std::endl;
-                    WSACleanup();
-                    return 1;
-                }
-                //memset(&serverAddress,0,sizeof(SOCKADDR_IN ));
-                //SOCKADDR_IN serverAddress;
-                serverAddress.sin_family = AF_INET;
-                serverAddress.sin_port = htons(port);
-                serverAddress.sin_addr.s_addr = inet_addr(add.c_str());
-
-                if (connect(clientS, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
-                    std::cerr << "Neporadilo sa pripojit na server" << std::endl;
-                    closesocket(clientS);
-                    WSACleanup();
-                    return 1;
-                }
+//                string add;
+//                int port;
+//                cout << "Zadaj adresu servera" << endl;
+//                cin >> add;
+//                cout << "Zadaj cislo portu " << endl;
+//                cin >> port;
+//                listening_port = port;
+//
+//                // Vytvorenie socketu
+//                clientS = socket(AF_INET,SOCK_DGRAM, 0);
+//                serverS = clientS;
+//                if (clientS == INVALID_SOCKET) {
+//                    std::cerr << "Nepodaril sa vytvorit socket." << std::endl;
+//                    WSACleanup();
+//                    return 1;
+//                }
+//                //memset(&serverAddress,0,sizeof(SOCKADDR_IN ));
+//                //SOCKADDR_IN serverAddress;
+//                serverAddress.sin_family = AF_INET;
+//                serverAddress.sin_port = htons(port);
+//                serverAddress.sin_addr.s_addr = inet_addr(add.c_str());
+//
+//                if (connect(clientS, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
+//                    std::cerr << "Neporadilo sa pripojit na server" << std::endl;
+//                    closesocket(clientS);
+//                    WSACleanup();
+//                    return 1;
+//                }
 
                 bool rec = true, connection = false , keepalive = true, recievFr = false, changeRole = false ,correctData = false, end = false;
                 thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
@@ -229,30 +226,30 @@ int main() {
 
             }
             else if(role == "server"){
-                cout << "Zadaj port na akom budes pocuvat" << endl;
-                cin >> listening_port;
-                // Vytvorenie socketu
-                serverS = socket(AF_INET,SOCK_DGRAM, 0);
-                clientS = serverS;
-                if (serverS == INVALID_SOCKET) {
-                    cout << "Nepodaril sa vytvorit socket." << endl;
-                    WSACleanup();
-                    return 1;
-                }
-                cout << "sidsfndk";
-
-                //memset(&serverAddress,0,sizeof(SOCKADDR_IN ));
-                //SOCKADDR_IN serverAddress;
-                serverAddress.sin_family = AF_INET;
-                serverAddress.sin_port = htons(listening_port);
-                serverAddress.sin_addr.s_addr = INADDR_ANY;
-
-                if (bind(serverS, reinterpret_cast<SOCKADDR *>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
-                    cout << "Nepodaril sa nastavit socket!" << endl;
-                    closesocket(serverS);
-                    WSACleanup();
-                    return 1;
-                }
+//                cout << "Zadaj port na akom budes pocuvat" << endl;
+//                cin >> listening_port;
+//                // Vytvorenie socketu
+//                serverS = socket(AF_INET,SOCK_DGRAM, 0);
+//                clientS = serverS;
+//                if (serverS == INVALID_SOCKET) {
+//                    cout << "Nepodaril sa vytvorit socket." << endl;
+//                    WSACleanup();
+//                    return 1;
+//                }
+//                cout << "sidsfndk";
+//
+//                //memset(&serverAddress,0,sizeof(SOCKADDR_IN ));
+//                //SOCKADDR_IN serverAddress;
+//                serverAddress.sin_family = AF_INET;
+//                serverAddress.sin_port = htons(listening_port);
+//                serverAddress.sin_addr.s_addr = INADDR_ANY;
+//
+//                if (bind(serverS, reinterpret_cast<SOCKADDR *>(&serverAddress), sizeof(serverAddress)) == SOCKET_ERROR) {
+//                    cout << "Nepodaril sa nastavit socket!" << endl;
+//                    closesocket(serverS);
+//                    WSACleanup();
+//                    return 1;
+//                }
                 bool rec = false, connection = false, keepalive = true, recievFr = false, changeRole = false, correctData = false, end = false;
                 thread t1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread t2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
