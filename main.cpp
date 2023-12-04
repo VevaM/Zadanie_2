@@ -1008,7 +1008,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *changeRole = false;
                     changedRoles = true;
                     clientAdd = serverAdd;
-                    *rec = true;
+                    //*rec = true;
                     //niec
                     //changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData,end);
                     // receiveM(rec,connection,keepalive,recievFr,changeRole,correctData);
@@ -1054,6 +1054,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *connection = true;
                     start = time(nullptr);
                     std::cout << "Received from klient: " << data << std::endl;
+                    *rec = true;
                 }
                 else if(toBinary((int)header1.type) == "00000100"){
                     //*connection = true;
@@ -1115,7 +1116,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     this_thread::sleep_for(100ms);
                     start = time(nullptr);
                     *recievFr =  true;
-
+                    *rec = true;
 
                 }
                 else if(toBinary((int)header1.type) == "10000000"){
@@ -1128,7 +1129,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 //                    }
                     *changeRole = true;
                     changedRoles = false;
-//
+                    *rec = false;
 //                    *keepalive = false;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                     start = time(nullptr);
@@ -1141,8 +1142,9 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     cout << "Received message from klient: "<< data << endl;
                     start = time(nullptr);
                     // *recievFr =  true;
+                    *rec = true;
                 }
-                *rec = true;
+                //*rec = true;
                 start = time(nullptr);
             }
         }
