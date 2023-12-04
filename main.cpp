@@ -777,7 +777,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 else if(toBinary((int)header1.type) == "00010000" && *connection && !*changeRole){
                     if(!*recievFr) *recievFr = true;
                     *rec = true;
-                    cout << "Received from server: " << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
+                    cout << "Received from server: " << data << " " << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
 
                     *correctData = true;
                     i++;
@@ -787,7 +787,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *rec = true;
                     *correctData = false;
                     resend = header1.fragmentInSequence;
-                    cout << "Received from server: " <<  header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
+                    cout << "Received from server: " << data << " " << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
                     i++;
                 }
                     //*rec = true;
