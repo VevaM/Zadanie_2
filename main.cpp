@@ -175,7 +175,7 @@ int main() {
     }
 
     while(!endConnection){
-        //cout << "sdf" << endl;
+        cout << "sdf" << endl;
         if(changedRoles){
             if(role == "klient"){
                 string add;
@@ -239,6 +239,7 @@ int main() {
                     WSACleanup();
                     return 1;
                 }
+                cout << "sidsfndk";
 
                 //memset(&serverAddress,0,sizeof(SOCKADDR_IN ));
                 //SOCKADDR_IN serverAddress;
@@ -275,7 +276,7 @@ int main() {
 //
 //        }
             }
-            changedRoles = false;
+           // changedRoles = false;
         }
 
 
@@ -863,6 +864,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     *rec = false;
                     start = time(nullptr);
                     *changeRole = true;
+                    changedRoles = true;
                     cout << "rola " << role;
 //                    this_thread::sleep_for(1000ms);
 //                    *keepalive = false;
@@ -963,6 +965,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 //serverAdd = clientAdd;
                 cout << "rola " << role;
                 *changeRole = false;
+                //this_thread::sleep_for(10ms);
                 changedRoles= true;
 
                // changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData,end);
@@ -1172,6 +1175,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 //                    if(choice == "ano"){
 //                        *changeRole = true;
 //                    }
+                    changedRoles = true;
                     *changeRole = true;
 //                    this_thread::sleep_for(1000ms);
 //                    *keepalive = false;
