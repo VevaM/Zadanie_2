@@ -659,6 +659,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 *rec = false;
                 //*recievFr = false;
                 start = time(nullptr);
+                if(numbOfFragm == recievedFragServer.back()) recievedFragServer.clear();
             }
             else if(*rec && *recievFr && !*correctData && !*end){
                 char text[] = "Nespravny fragment";
