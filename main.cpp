@@ -174,7 +174,7 @@ int main() {
                 rec = true;
                 recievFr = false;
                 connection = true;
-                this_thread::sleep_for(1000ms);
+               // this_thread::sleep_for(1000ms);
                 thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
                 thread n2 (receiveM,&rec, &connection, &keepalive, &recievFr, &changeRole, &correctData, &end);
                 n1.join();
