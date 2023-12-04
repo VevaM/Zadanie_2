@@ -776,7 +776,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                 else if(toBinary((int)header1.type) == "00010000" && *connection && !*changeRole){
                     if(!*recievFr) *recievFr = true;
                     *rec = true;
-                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << " " <<  i<< endl;
+                    cout << "Received from server: " << header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
 
                     *correctData = true;
                     i++;
@@ -786,7 +786,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     *rec = true;
                     *correctData = false;
                     resend = header1.fragmentInSequence;
-                    cout << "Received from server: " << data << header1.fragmentInSequence << "/" << header1.numberOfFragments << " "<< i<< endl;
+                    cout << "Received from server: " <<  header1.fragmentInSequence << "/" << header1.numberOfFragments << endl;
                     i++;
                 }
                     //*rec = true;
@@ -833,11 +833,10 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
             if (recievedByt > 0) {
                 char data[recievedByt - 9];
                 Header header1;
-                cout << "nieco aj psoelm";
 
                 decodeMessage(&header1,data, sizeof(data)-1,message);
                 uint16_t crc = CRC::Calculate(data, sizeof(data)-1,CRC::CRC_16_ARC());
-                cout << "crc " << crc << " " << header1.crc <<" s " << sizeof(data);
+               // cout << "crc " << crc << " " << header1.crc <<" s " << sizeof(data);
                 if(toBinary((int)header1.type) == "00000001"){
                     *connection = true;
                     start = time(nullptr);
@@ -848,10 +847,10 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     //crc += 1;
                     if(crc == header1.crc) {
                         *correctData = true;
-                        cout << "spravny fragment";
+//                        cout << "spravny fragment";
                     }else{
                         *correctData = false;
-                        cout <<  "nespravny fragment";
+//                        cout <<  "nespravny fragment";
                     }
                     if(header1.fragmentInSequence == 0){
                         file = true;
@@ -890,6 +889,8 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     else {
                         numbOfFragm = header1.numberOfFragments;
                         textMess.append(data);
+                        recievedFragServer.push_back(header1.fragmentInSequence);
+                        cout << "Prijaty fragment " << header1.fragmentInSequence << "/" <<header1.numberOfFragments << endl;
 
                         if(header1.fragmentInSequence == header1.numberOfFragments){
                             cout << "Received MESSAGE from klient: " << textMess << endl;
