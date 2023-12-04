@@ -799,7 +799,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     *rec = false;
                     start = time(nullptr);
                     *changeRole = true;
-                    changedRoles = true;
+                    changedRoles = false;
                     cout << "rola " << role;
 //                    this_thread::sleep_for(1000ms);
 //                    *keepalive = false;
@@ -823,7 +823,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
           //  cout << "port " << listening_port;
         }
         char text[] = "Dokoncenie prepinania";
-        Header header {0b00000010,sizeof(text) + 9,1,1,0};
+        Header header {0b10000010,sizeof(text) + 9,1,1,0};
         char message[sizeof(text) + sizeof(header)];
         codeMessage(&header,text,sizeof(text),message);
         sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&serverAdd), sizeof(serverAdd));
@@ -1134,7 +1134,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 //                        *changeRole = true;
 //                    }
                     *changeRole = true;
-                    changedRoles = true;
+                    changedRoles = false;
                     *rec = true;
 //                    *keepalive = false;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
@@ -1148,6 +1148,13 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     cout << "Received message from klient: "<< data << endl;
                     start = time(nullptr);
                     // *recievFr =  true;
+                    *rec = true;
+                }
+                else if(toBinary((int)header1.type) == "10000001"){
+                    cout << "asd" ;
+                    *connection = true;
+                    start = time(nullptr);
+                    std::cout << "Received from klient: " << data << std::endl;
                     *rec = true;
                 }
                 //*rec = true;
