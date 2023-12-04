@@ -175,6 +175,7 @@ int main() {
     }
 
     while(!endConnection){
+        cout << "sdf" << endl;
         if(changedRoles){
             if(role == "klient"){
                 string add;
@@ -862,8 +863,8 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                     start = time(nullptr);
                     *changeRole = true;
                     cout << "rola " << role;
-                    this_thread::sleep_for(1000ms);
-                    *keepalive = false;
+//                    this_thread::sleep_for(1000ms);
+//                    *keepalive = false;
                 }
                     // ukoncenie spojenia
                 else if(choice == 4){
@@ -942,7 +943,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 codeMessage(&header,text,sizeof(text),message);
                 sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
                 *rec = false;
-                *keepalive = false;
+                //*keepalive = false;
                 //*recievFr = false;
                 start = time(nullptr);
             }
@@ -963,10 +964,10 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 *changeRole = false;
                 changedRoles= true;
 
-                changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData,end);
+               // changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData,end);
                 // sendM(rec,connection,keepalive,recievFr,changeRole,correctData);
-                 this_thread::sleep_for(1000ms);
-                 *keepalive = false;
+//                 this_thread::sleep_for(1000ms);
+//                 *keepalive = false;
 
             }
             //cout << "huhuhuhuhuhuh" << endl;
@@ -1054,7 +1055,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     clientAdd = serverAdd;
                     //*rec = true;
                     //niec
-                    changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData,end);
+                    //changeRoleTo("server",rec,connection,keepalive,recievFr,changeRole,correctData,end);
                     // receiveM(rec,connection,keepalive,recievFr,changeRole,correctData);
                     this_thread::sleep_for(1000ms);
                     *keepalive = false;
@@ -1171,8 +1172,8 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 //                        *changeRole = true;
 //                    }
                     *changeRole = true;
-                    this_thread::sleep_for(1000ms);
-                    *keepalive = false;
+//                    this_thread::sleep_for(1000ms);
+//                    *keepalive = false;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                     start = time(nullptr);
                     // *recievFr =  true;
