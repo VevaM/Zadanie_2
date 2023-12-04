@@ -908,7 +908,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
                 //*rec = false;
                // sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
-                //*rec = false;
+                *rec = false;
                 //*recievFr = false;
                 start = time(nullptr);
                 role = "klient";
@@ -1129,7 +1129,7 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 //                    }
                     *changeRole = true;
                     changedRoles = false;
-                    *rec = false;
+                    *rec = true;
 //                    *keepalive = false;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                     start = time(nullptr);
