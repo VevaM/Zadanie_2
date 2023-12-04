@@ -1217,7 +1217,7 @@ string toBinary(int number){
 
 void changeRoleTo(string newRole, bool *rec , bool *connection, bool *keepalive , bool *recievFr, bool *changeRole , bool *correctData, bool *end){
     *changeRole = false;
-    changedRoles = false;
+    //changedRoles = false;
     if (newRole == "klient") {
         // Zatvorenie existujúceho spojenia (ak existuje)
         closesocket(clientS);
