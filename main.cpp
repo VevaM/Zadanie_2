@@ -816,12 +816,12 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
             }
           //  cout << "port " << listening_port;
         }
-        char text[] = "Nadviazane spojenie";
-        Header header {0b00000010,sizeof(text) + 9,1,1,0};
-        char message[sizeof(text) + sizeof(header)];
-        codeMessage(&header,text,sizeof(text),message);
-        sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&serverAdd), sizeof(serverAdd));
-        *rec = false;
+//        char text[] = "Nadviazane spojenie";
+//        Header header {0b00000010,sizeof(text) + 9,1,1,0};
+//        char message[sizeof(text) + sizeof(header)];
+//        codeMessage(&header,text,sizeof(text),message);
+//        sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&serverAdd), sizeof(serverAdd));
+//        *rec = false;
 //        if (changedRoles) {
 //            sendM(rec,connection,keepalive,recievFr,changeRole);
 //            changedRoles = false;
