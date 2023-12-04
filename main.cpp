@@ -1128,11 +1128,11 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
 //                    }
                     *changeRole = true;
                     changedRoles = false;
-//                    
+//
 //                    *keepalive = false;
                     //changeRoleTo("klient",rec,connection,keepalive,recievFr,changeRole,correctData);
                     start = time(nullptr);
-                    this_thread::sleep_for(1000ms);
+//                    this_thread::sleep_for(1000ms);
                     // *recievFr =  true;
                 }
                 else if(toBinary((int)header1.type) == "01000000"){
