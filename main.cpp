@@ -111,7 +111,7 @@ int main() {
             if(changedRoles){
 //                cout << "sdf12345" << endl;
                 changedRoles = false;
-                rec = true;
+                rec = false;
                 recievFr = false;
                 connection = true;
                 thread n1(sendM, &rec ,&connection, &keepalive, &recievFr, &changeRole , &correctData, &end);
@@ -171,7 +171,7 @@ int main() {
             if(changedRoles){
 //                cout << "sdf12345" << endl;
                 changedRoles = false;
-                rec = false;
+                rec = true;
                 recievFr = false;
                 connection = true;
                // this_thread::sleep_for(1000ms);
