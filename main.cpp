@@ -297,9 +297,9 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                         toSend[fragmentSize] = '\0';
 
                         uint16_t crc = CRC::Calculate(toSend, sizeof(toSend),CRC::CRC_16_ARC());
+                        crc +=1;
                         cout <<  "crc " <<crc << " " << sizeof(toSend) << endl;
                         cout << "POCET" <<number <<endl;
-                        crc += 1;
                         Header header{0b00000100, static_cast<unsigned short>(sizeof(toSend) + 9), static_cast<unsigned short>(number), 1, crc};
                         char message[sizeof(toSend) + sizeof(header)];
                         codeMessage(&header, toSend, sizeof(toSend), message);
@@ -329,6 +329,16 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                                     cout << "text size " << text_size << "fragme " << fragmentSize;
 
                                     cout <<  "crc " <<crc << " " << sizeof(toSend) << " s " <<s << endl;
+
+                                }
+                                else {
+                                    char toSend[fragmentSize + 1];
+                                    for(int i = (resend * fragmentSize); i < ((resend + 1) * fragmentSize) ; i++){
+                                        toSend[i - resend*fragmentSize] = text[i];
+                                    }
+                                    toSend[fragmentSize] = '\0';
+                                    if( text_size > fragmentSize) s = fragmentSize;
+                                    else s = text_size;
 
                                 }
                                 if(s < fragmentSize){
@@ -622,10 +632,10 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                 *rec = false;
                 //*recievFr = false;
                 start = time(nullptr);
-                if(numbOfFragm == recievedFragServer.back()+1) {
-                    recievedFragServer.clear();
+                if(numbOfFragm == recievedFragServer.back()+1){
                     numbOfFragm = 0;
-                }
+                    recievedFragServer.clear();
+                } 
             }
             else if(*rec && *recievFr && !*correctData && !*end){
                 char text[] = "Nespravny fragment";
@@ -862,8 +872,6 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                         if(header1.fragmentInSequence == header1.numberOfFragments){
                             cout << "Received MESSAGE from klient: " << textMess << endl;
                             textMess.clear();
-//                            numbOfFragm = 0;
-//                            recievedFragServer.clear();
                         }
                     }
                     this_thread::sleep_for(100ms);
