@@ -4,6 +4,7 @@
 #include <thread>
 #include <windows.h>
 #include <fstream>
+#include <list>
 
 /**
  * Stiahnutá knižnica z github.com
@@ -13,9 +14,10 @@
 
 using namespace std;
 static string role;
-static int dataLenght = 1400;
+static int dataLenght = 1400, numbOfFragm;
 static int listening_port = 20000;
 static bool endConnection = false,changedRoles = false, sendData = false, receiveData = false;
+static list<int> recievedF;
 
 static SOCKADDR_IN serverAddress;
 static sockaddr_in clientAdd, serverAdd;
@@ -216,6 +218,7 @@ void decodeMessage(Header *header1, char text[], int text_size, char message[]){
 void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool *changeRole , bool *correctData, bool *end){
     if(role == "klient"){
         int i = 0;
+        int * recievedFragm ;
         while(*keepalive && !changedRoles){
 
             if((time(nullptr)-start) >= 5 && *connection && i < 3){
@@ -284,7 +287,6 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                             number = ((int)message.size()/fragmentSize);
                         }
                         else number = (((int)message.size()/fragmentSize) + 1);
-
                         int a = 0;
                         char toSend[fragmentSize + 1];
                         for(int i = 0; i < fragmentSize ; i++){
@@ -519,8 +521,6 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
                             }
                         }
 
-
-
                     }
                     else {
                         uint16_t crc = CRC::Calculate(file, sizeof(file),CRC::CRC_16_ARC());
@@ -610,7 +610,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
 
             else if(*rec && *recievFr && *correctData && !*end){
                 char text[] = "Spravny fragment";
-                Header header {0b00010000,sizeof(text) + 9,1,1,0};
+                Header header {0b00010000,sizeof(text) + 9,static_cast<unsigned short>(numbOfFragm),static_cast<unsigned short>(recievedF.back()),0};
                 char message[sizeof(text) + sizeof(header)];
                 codeMessage(&header,text,sizeof(text),message);
                 sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
@@ -620,7 +620,7 @@ void sendM(bool * rec, bool * connection, bool *keepalive, bool *recievFr , bool
             }
             else if(*rec && *recievFr && !*correctData && !*end){
                 char text[] = "Nespravny fragment";
-                Header header {0b00001000,sizeof(text) + 9,1,1,0};
+                Header header {0b00001000,sizeof(text) + 9,static_cast<unsigned short>(numbOfFragm),static_cast<unsigned short>(recievedF.back()),0};
                 char message[sizeof(text) + sizeof(header)];
                 codeMessage(&header,text,sizeof(text),message);
                 sendto(serverS, message, sizeof(message), 0,reinterpret_cast<sockaddr*>(&clientAdd), sizeof(clientAdd));
@@ -807,12 +807,14 @@ void receiveM(bool * rec, bool * connection, bool *keepalive ,bool *recievFr , b
                     }
                     if(header1.fragmentInSequence == 0){
                         file = true;
+                        numbOfFragm = header1.numberOfFragments;
                         strcpy(file_name1,data);
                         cout << "Received file name from klient: " << data << endl;
                     }
                     if(file){
                         if(header1.fragmentInSequence > 0){
                             // cout << header1.lenght << endl;
+                            recievedF.push_back(header1.fragmentInSequence);
                             file_data.append(data, (header1.lenght - 9));
                             cout << "Prijaty fragment " << header1.fragmentInSequence << "/" <<header1.numberOfFragments << endl;
                             sizeOfFile += (header1.lenght - 9);
